@@ -40,7 +40,18 @@ The PAT owner must have permission to view every report being exported.
 
 ## Deployment notes
 
-- `web` and `worker` share the same Railway Postgres and `/data` volume.
+- `web` and `worker` share the same Railway Postgres and the same S3-compatible
+  object storage bucket (Railway Bucket). The worker writes PDFs/thumbnails;
+  `web` streams them to browsers via the authenticated file route.
 - The worker service should have **no public networking** — it only runs on the cron schedule.
 - Never set `TABLEAU_PAT_*` env vars on the `web` service; they are only needed by the worker.
 - Never set `AUTH_SECRET` on the `worker` service.
+
+## Storage credential rotation
+
+S3 credentials live in the Bucket service on Railway. To rotate:
+
+1. In the Bucket service, create a new access key.
+2. Update `S3_ACCESS_KEY_ID` + `S3_SECRET_ACCESS_KEY` on both `web` and `worker`.
+3. Redeploy both services.
+4. Revoke the old key once the next export run succeeds.

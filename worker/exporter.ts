@@ -1,11 +1,7 @@
-import path from "node:path";
 import type { Report } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { TableauClient } from "@/lib/tableau/client";
-import {
-  writeReportFile,
-  writeReportThumbnail,
-} from "@/lib/storage";
+import { writeReportFile, writeReportThumbnail } from "@/lib/storage";
 import type { TableauOrientation } from "@/lib/tableau/types";
 
 function orientationToApi(o: Report["orientation"]): TableauOrientation {
@@ -33,68 +29,51 @@ export async function exportReport(
   try {
     const filterParams = parseFilterParams(report.filterParams);
 
+    let exportKey: string;
+    let thumbnailKey: string | null = null;
+    let fileSize: number;
+
     if (report.exportFormat === "PDF") {
       const pdf = await client.exportViewPdf(report.tableauViewId, {
         orientation: orientationToApi(report.orientation),
         filterParams,
       });
-      const pdfPath = await writeReportFile(report.id, "latest.pdf", pdf);
+      exportKey = await writeReportFile(report.id, "latest.pdf", pdf);
+      fileSize = pdf.byteLength;
 
       const thumb = await generatePdfThumbnail(pdf);
-      const thumbPath = thumb
-        ? await writeReportThumbnail(report.id, thumb)
-        : null;
-
-      await prisma.$transaction([
-        prisma.report.update({
-          where: { id: report.id },
-          data: {
-            latestExportPath: path.relative(process.cwd(), pdfPath),
-            latestThumbnailPath: thumbPath
-              ? path.relative(process.cwd(), thumbPath)
-              : null,
-            lastExportedAt: new Date(),
-            lastExportStatus: "SUCCESS",
-          },
-        }),
-        prisma.exportRun.update({
-          where: { id: run.id },
-          data: {
-            completedAt: new Date(),
-            status: "SUCCESS",
-            filePath: pdfPath,
-            fileSizeBytes: pdf.byteLength,
-          },
-        }),
-      ]);
+      if (thumb) {
+        thumbnailKey = await writeReportThumbnail(report.id, thumb);
+      }
     } else {
       const png = await client.exportViewPng(report.tableauViewId, {
         filterParams,
       });
-      const pngPath = await writeReportFile(report.id, "latest.png", png);
-      const thumbPath = await writeReportThumbnail(report.id, png);
-
-      await prisma.$transaction([
-        prisma.report.update({
-          where: { id: report.id },
-          data: {
-            latestExportPath: path.relative(process.cwd(), pngPath),
-            latestThumbnailPath: path.relative(process.cwd(), thumbPath),
-            lastExportedAt: new Date(),
-            lastExportStatus: "SUCCESS",
-          },
-        }),
-        prisma.exportRun.update({
-          where: { id: run.id },
-          data: {
-            completedAt: new Date(),
-            status: "SUCCESS",
-            filePath: pngPath,
-            fileSizeBytes: png.byteLength,
-          },
-        }),
-      ]);
+      exportKey = await writeReportFile(report.id, "latest.png", png);
+      thumbnailKey = await writeReportThumbnail(report.id, png);
+      fileSize = png.byteLength;
     }
+
+    await prisma.$transaction([
+      prisma.report.update({
+        where: { id: report.id },
+        data: {
+          latestExportPath: exportKey,
+          latestThumbnailPath: thumbnailKey,
+          lastExportedAt: new Date(),
+          lastExportStatus: "SUCCESS",
+        },
+      }),
+      prisma.exportRun.update({
+        where: { id: run.id },
+        data: {
+          completedAt: new Date(),
+          status: "SUCCESS",
+          filePath: exportKey,
+          fileSizeBytes: fileSize,
+        },
+      }),
+    ]);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     await prisma.$transaction([
@@ -116,7 +95,7 @@ export async function exportReport(
 }
 
 // Thumbnail generation is wired up in a later milestone (needs pdf-to-img).
-// Returning null here is fine — the Report row simply stores no thumbnail path.
+// Returning null here is fine — the Report row simply stores no thumbnail key.
 async function generatePdfThumbnail(_pdf: Buffer): Promise<Buffer | null> {
   return null;
 }

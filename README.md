@@ -74,7 +74,11 @@ See [`.env.example`](.env.example). Grouped by service:
 | `AUTH_SECRET` | ✓ |   | `openssl rand -base64 32` |
 | `AUTH_URL` | ✓ |   | Public URL of the web service |
 | `AUTH_TRUST_HOST` | ✓ |   | Set `"true"` on Railway |
-| `STORAGE_PATH` | ✓ | ✓ | `/data/reports` in prod; `./data/reports` locally |
+| `S3_ENDPOINT` | ✓ | ✓ | e.g. `https://t3.storageapi.dev` |
+| `S3_BUCKET` | ✓ | ✓ | Bucket name |
+| `S3_ACCESS_KEY_ID` | ✓ | ✓ | |
+| `S3_SECRET_ACCESS_KEY` | ✓ | ✓ | |
+| `S3_REGION` | ✓ | ✓ | `auto` for R2/Railway; region code for AWS |
 | `TABLEAU_SITE_URL` |   | ✓ | e.g. `https://prod-uk-a.online.tableau.com` |
 | `TABLEAU_SITE_CONTENT_URL` |   | ✓ | Site content URL from Tableau |
 | `TABLEAU_PAT_NAME` |   | ✓ | Never set on `web` |
@@ -88,14 +92,15 @@ The ping route (`/api/admin/tableau/ping`) also needs the `TABLEAU_*` vars on
 
 1. **Create project** from the GitHub repo (authorise the Railway GitHub app).
 2. **Add Postgres** plugin — Railway injects `DATABASE_URL` automatically.
-3. **Create Volume** — mount at `/data` on both services.
+3. **Add Bucket** (S3-compatible object storage) — copy endpoint, access key, secret, bucket name.
 4. **Create service `web`**:
-   - Start command: `npx prisma migrate deploy && npm run start`
-   - Env: `DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL`, `AUTH_TRUST_HOST=true`, `STORAGE_PATH=/data/reports`
+   - Pre-deploy command: `npx prisma migrate deploy`
+   - Start command: `npm run start`
+   - Env: `DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL`, `AUTH_TRUST_HOST=true`, all `S3_*` vars
 5. **Create service `worker`**:
    - Start command: `npm run worker:tick`
    - Cron schedule: `*/5 * * * *`
-   - Env: `DATABASE_URL`, `STORAGE_PATH=/data/reports`, all `TABLEAU_*` vars
+   - Env: `DATABASE_URL`, all `S3_*` vars, all `TABLEAU_*` vars
    - No public networking
 6. Push to `main` → both services build and deploy.
 
@@ -113,6 +118,7 @@ The ping route (`/api/admin/tableau/ping`) also needs the `TABLEAU_*` vars on
 | `npm run prisma:studio` | Prisma Studio DB browser |
 | `npm run bootstrap:admin` | Create first admin (refuses if one exists) |
 | `npm run worker:tick` | Run one export dispatcher tick |
+| `npm run tableau:ping` | Standalone Tableau PAT check (signin/signout) |
 
 ## Project structure
 
