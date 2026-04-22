@@ -13,7 +13,8 @@
     "prisma:studio": "prisma studio",
     "prisma:seed": "tsx prisma/seed.ts",
     "bootstrap:admin": "tsx scripts/bootstrap-admin.ts",
-    "worker:tick": "tsx worker/index.ts"
+    "worker:tick": "tsx worker/index.ts",
+    "tableau:ping": "tsx scripts/tableau-ping.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
