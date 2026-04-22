@@ -1,0 +1,172 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String     @id @default(cuid())
+  email               String     @unique
+  passwordHash        String
+  mfaSecret           String?
+  mfaEnabled          Boolean    @default(false)
+  forcePasswordChange Boolean    @default(false)
+  status              UserStatus @default(ACTIVE)
+  isAdmin             Boolean    @default(false)
+  createdAt           DateTime   @default(now())
+  lastLoginAt         DateTime?
+
+  roles        UserRole[]
+  reportGrants UserReport[]
+  favourites   Favourite[]
+  reportViews  ReportView[]
+  auditLogs    AuditLog[]
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+model Role {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  description String?
+  users       UserRole[]
+  reports     RoleReport[]
+}
+
+model UserRole {
+  userId String
+  roleId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  sortOrder   Int      @default(0)
+  reports     Report[]
+  createdAt   DateTime @default(now())
+}
+
+model Report {
+  id                  String       @id @default(cuid())
+  name                String
+  description         String?
+  categoryId          String?
+  category            Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tableauViewId       String
+  tableauContentUrl   String
+  filterParams        Json?
+  exportFormat        ExportFormat @default(PDF)
+  orientation         Orientation  @default(LANDSCAPE)
+  refreshCron         String       @default("0 * * * *")
+  latestExportPath    String?
+  latestThumbnailPath String?
+  lastExportedAt      DateTime?
+  lastExportStatus    ExportStatus @default(PENDING)
+  enabled             Boolean      @default(true)
+  createdAt           DateTime     @default(now())
+
+  roles         RoleReport[]
+  userGrants    UserReport[]
+  exportHistory ExportRun[]
+  favourites    Favourite[]
+  views         ReportView[]
+}
+
+model Favourite {
+  userId    String
+  reportId  String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  report    Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@id([userId, reportId])
+}
+
+model ReportView {
+  id       String   @id @default(cuid())
+  userId   String
+  reportId String
+  viewedAt DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  report   Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([userId, viewedAt])
+}
+
+model Announcement {
+  id          String    @id @default(cuid())
+  title       String
+  body        String
+  active      Boolean   @default(true)
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  createdById String?
+}
+
+enum ExportFormat {
+  PDF
+  PNG
+}
+
+enum Orientation {
+  PORTRAIT
+  LANDSCAPE
+}
+
+enum ExportStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+model RoleReport {
+  roleId   String
+  reportId String
+  role     Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  report   Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, reportId])
+}
+
+model UserReport {
+  userId   String
+  reportId String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  report   Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@id([userId, reportId])
+}
+
+model ExportRun {
+  id            String       @id @default(cuid())
+  reportId      String
+  startedAt     DateTime     @default(now())
+  completedAt   DateTime?
+  status        ExportStatus
+  errorMessage  String?
+  filePath      String?
+  fileSizeBytes Int?
+  report        Report       @relation(fields: [reportId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  targetId  String?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+}

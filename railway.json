@@ -1,0 +1,25 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "services": {
+    "web": {
+      "build": {
+        "builder": "NIXPACKS"
+      },
+      "deploy": {
+        "startCommand": "npx prisma migrate deploy && npm run start",
+        "healthcheckPath": "/login",
+        "restartPolicyType": "ON_FAILURE"
+      }
+    },
+    "worker": {
+      "build": {
+        "builder": "NIXPACKS"
+      },
+      "deploy": {
+        "startCommand": "npm run worker:tick",
+        "cronSchedule": "*/5 * * * *",
+        "restartPolicyType": "NEVER"
+      }
+    }
+  }
+}
