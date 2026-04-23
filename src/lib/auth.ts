@@ -1,6 +1,5 @@
 import NextAuth, { type DefaultSession } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { authenticator } from "otplib";
 import { z } from "zod";
@@ -30,7 +29,8 @@ const credentialsSchema = z.object({
 });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  debug: process.env.AUTH_DEBUG === "true",
+  trustHost: true,
   session: {
     strategy: "jwt",
     maxAge: 2 * 60 * 60,
