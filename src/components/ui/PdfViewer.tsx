@@ -78,6 +78,7 @@ export function PdfViewer({ src, title }: Props) {
                       key={`page-${i + 1}`}
                       pageNumber={i + 1}
                       width={width}
+                      devicePixelRatio={3}
                       renderAnnotationLayer={false}
                       renderTextLayer={false}
                       className="mb-2 shadow"
