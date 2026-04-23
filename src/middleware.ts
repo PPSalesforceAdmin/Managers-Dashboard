@@ -1,5 +1,9 @@
+import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { authConfig } from "@/lib/auth.config";
+
+// Edge-runtime middleware: uses the edge-safe auth config only (no Prisma).
+const { auth } = NextAuth(authConfig);
 
 const PUBLIC_PATHS = ["/login"];
 const PUBLIC_API_PREFIXES = ["/api/auth"];

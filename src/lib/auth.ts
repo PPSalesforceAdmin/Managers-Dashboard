@@ -1,26 +1,11 @@
-import NextAuth, { type DefaultSession } from "next-auth";
+import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { authenticator } from "otplib";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { logAuditEvent } from "@/server/audit";
-
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;
-      email: string;
-      isAdmin: boolean;
-      forcePasswordChange: boolean;
-    } & DefaultSession["user"];
-  }
-  interface User {
-    id?: string;
-    isAdmin?: boolean;
-    forcePasswordChange?: boolean;
-  }
-}
+import { authConfig } from "@/lib/auth.config";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -29,16 +14,7 @@ const credentialsSchema = z.object({
 });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  debug: process.env.AUTH_DEBUG === "true",
-  trustHost: true,
-  session: {
-    strategy: "jwt",
-    maxAge: 2 * 60 * 60,
-    updateAge: 5 * 60,
-  },
-  pages: {
-    signIn: "/login",
-  },
+  ...authConfig,
   providers: [
     Credentials({
       name: "Credentials",
@@ -76,34 +52,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.userId = user.id;
-        token.isAdmin = Boolean(user.isAdmin);
-        token.forcePasswordChange = Boolean(user.forcePasswordChange);
-      } else if (typeof token.userId === "string") {
-        const fresh = await prisma.user.findUnique({
-          where: { id: token.userId },
-          select: { isAdmin: true, forcePasswordChange: true, status: true },
-        });
-        if (!fresh || fresh.status !== "ACTIVE") {
-          return { ...token, userId: undefined };
-        }
-        token.isAdmin = fresh.isAdmin;
-        token.forcePasswordChange = fresh.forcePasswordChange;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (typeof token.userId === "string") {
-        session.user.id = token.userId;
-        session.user.isAdmin = Boolean(token.isAdmin);
-        session.user.forcePasswordChange = Boolean(token.forcePasswordChange);
-      }
-      return session;
-    },
-  },
   events: {
     async signIn({ user }) {
       if (!user?.id) return;
