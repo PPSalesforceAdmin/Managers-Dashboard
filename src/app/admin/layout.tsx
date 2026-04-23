@@ -26,6 +26,18 @@ export default async function AdminLayout({
         >
           Reports
         </Link>
+        <Link
+          href="/admin/users"
+          className="rounded px-2 py-1.5 hover:bg-slate-100"
+        >
+          Users
+        </Link>
+        <Link
+          href="/admin/roles"
+          className="rounded px-2 py-1.5 hover:bg-slate-100"
+        >
+          Roles
+        </Link>
         <div className="my-2 border-t border-slate-200" />
         <Link
           href="/dashboard"

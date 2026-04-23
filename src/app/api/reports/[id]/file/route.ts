@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { readReportFile } from "@/lib/storage";
+import { canUserViewReport } from "@/lib/authz";
 import { logAuditEvent } from "@/server/audit";
 
 async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
@@ -36,8 +37,10 @@ export async function GET(
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
 
-  // Phase 2: admin-only. Phase 3 will add role/user grants check here.
-  if (!session.user.isAdmin) {
+  const allowed =
+    session.user.isAdmin ||
+    (await canUserViewReport(session.user.id, report.id));
+  if (!allowed) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 

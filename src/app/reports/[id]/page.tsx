@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/server/session";
+import { canUserViewReport } from "@/lib/authz";
 import { exportReportNow } from "@/lib/reports-actions";
+import { PdfViewer } from "@/components/ui/PdfViewer";
 
 function formatAgo(d: Date | null): string {
   if (!d) return "never exported";
@@ -26,15 +28,20 @@ export default async function ReportViewPage({
   const report = await prisma.report.findUnique({ where: { id } });
   if (!report || !report.enabled) notFound();
 
-  // Phase 2: admin-only. Phase 3 adds grants check.
-  if (!user.isAdmin) redirect("/dashboard");
+  const allowed =
+    user.isAdmin || (await canUserViewReport(user.id, report.id));
+  if (!allowed) notFound();
 
   const hasExport = Boolean(report.latestExportPath);
-  const fileSrc = `/api/reports/${report.id}/file`;
+  // Cache-bust by lastExportedAt so a fresh export loads a fresh blob
+  const cacheKey = report.lastExportedAt
+    ? `?t=${report.lastExportedAt.getTime()}`
+    : "";
+  const fileSrc = `/api/reports/${report.id}/file${cacheKey}`;
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-4">
         <div>
           {user.isAdmin ? (
             <Link
@@ -59,10 +66,10 @@ export default async function ReportViewPage({
             {report.description ? " · " : ""}Last updated {formatAgo(report.lastExportedAt)}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {hasExport ? (
             <a
-              href={`${fileSrc}?download=1`}
+              href={`${fileSrc}${cacheKey ? "&" : "?"}download=1`}
               className="rounded border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100"
             >
               Download
@@ -92,17 +99,13 @@ export default async function ReportViewPage({
             />
           </div>
         ) : (
-          <iframe
-            src={fileSrc}
-            title={report.name}
-            className="h-[85vh] w-full rounded border border-slate-200 bg-white"
-          />
+          <PdfViewer src={fileSrc} title={report.name} />
         )
       ) : (
         <div className="rounded border border-dashed border-slate-300 bg-white p-10 text-center">
           <p className="text-slate-600">
-            No export available yet. Click <strong>Export now</strong> above to
-            generate one.
+            No export available yet.
+            {user.isAdmin ? " Click Export now above to generate one." : " Please check back soon."}
           </p>
         </div>
       )}

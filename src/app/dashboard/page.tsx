@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { listUserReports } from "@/lib/authz";
 
 function formatAgo(d: Date | null): string {
   if (!d) return "never";
@@ -24,18 +25,37 @@ export default async function DashboardPage() {
     await signOut({ redirectTo: "/login" });
   }
 
-  // Phase 2: admins see all enabled reports. Phase 3 will scope via grants.
-  const reports = session.user.isAdmin
+  const visibleReports = session.user.isAdmin
     ? await prisma.report.findMany({
         where: { enabled: true },
         orderBy: [{ name: "asc" }],
         include: { category: true },
       })
-    : [];
+    : await (async () => {
+        const rows = await listUserReports(session.user.id);
+        if (rows.length === 0) return [];
+        const ids = rows.map((r) => r.id);
+        return prisma.report.findMany({
+          where: { id: { in: ids }, enabled: true },
+          orderBy: [{ name: "asc" }],
+          include: { category: true },
+        });
+      })();
+
+  const reportsByCategory = new Map<
+    string,
+    typeof visibleReports
+  >();
+  for (const r of visibleReports) {
+    const key = r.category?.name ?? "Uncategorised";
+    if (!reportsByCategory.has(key)) reportsByCategory.set(key, []);
+    reportsByCategory.get(key)!.push(r);
+  }
+  const categoryNames = [...reportsByCategory.keys()].sort();
 
   return (
     <div className="space-y-6 py-2">
-      <div className="flex items-start justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold text-pp-navy">
             Welcome, {session.user.email}
@@ -64,13 +84,10 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {session.user.isAdmin ? (
-        <section>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
-            Reports
-          </h2>
-          {reports.length === 0 ? (
-            <div className="rounded border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-600">
+      {visibleReports.length === 0 ? (
+        <div className="rounded border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-600">
+          {session.user.isAdmin ? (
+            <>
               No reports yet.{" "}
               <Link
                 href="/admin/reports/new"
@@ -78,19 +95,25 @@ export default async function DashboardPage() {
               >
                 Create the first one →
               </Link>
-            </div>
+            </>
           ) : (
+            <>You don't have any reports assigned yet. Ask an administrator to grant you access.</>
+          )}
+        </div>
+      ) : (
+        categoryNames.map((cat) => (
+          <section key={cat}>
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
+              {cat}
+            </h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {reports.map((r) => (
+              {reportsByCategory.get(cat)!.map((r) => (
                 <Link
                   key={r.id}
                   href={`/reports/${r.id}`}
                   className="block rounded border border-slate-200 bg-white p-4 hover:border-pp-orange hover:shadow-sm"
                 >
-                  <p className="text-xs uppercase tracking-wide text-slate-500">
-                    {r.category?.name ?? "Uncategorised"}
-                  </p>
-                  <p className="mt-1 font-medium text-pp-navy">{r.name}</p>
+                  <p className="font-medium text-pp-navy">{r.name}</p>
                   {r.description ? (
                     <p className="mt-1 text-sm text-slate-600 line-clamp-2">
                       {r.description}
@@ -102,13 +125,8 @@ export default async function DashboardPage() {
                 </Link>
               ))}
             </div>
-          )}
-        </section>
-      ) : (
-        <div className="rounded border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-600">
-          You don't have any reports assigned yet. Ask an administrator to grant
-          you access.
-        </div>
+          </section>
+        ))
       )}
     </div>
   );
