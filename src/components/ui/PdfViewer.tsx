@@ -13,11 +13,14 @@ export function PdfViewer({ src, title }: Props) {
     <iframe
       src={src}
       title={title ?? "Report PDF"}
-      className="h-[85vh] w-full rounded border border-slate-200 bg-white"
+      className="h-[85vh] w-full rounded-pp-card bg-white shadow-pp-card-soft"
     >
-      <p className="p-4 text-sm text-slate-600">
-        Your browser can't display PDFs inline.{" "}
-        <a className="text-pp-orange underline" href={downloadHref}>
+      <p className="p-4 text-sm text-pp-body/80">
+        Your browser can&apos;t display PDFs inline.{" "}
+        <a
+          className="font-semibold text-pp-orange hover:underline"
+          href={downloadHref}
+        >
           Download the PDF
         </a>{" "}
         instead.

@@ -9,44 +9,42 @@ export default async function AdminLayout({
   await requireAdmin();
 
   return (
-    <div className="grid gap-6 md:grid-cols-[200px_1fr]">
-      <nav className="flex flex-col gap-1 rounded border border-slate-200 bg-white p-3 text-sm">
-        <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+    <div className="grid gap-6 md:grid-cols-[220px_1fr]">
+      <nav className="sticky top-4 flex h-fit flex-col gap-0.5 rounded-pp-card bg-white p-3 text-sm shadow-pp-card-very-soft">
+        <p className="px-2 pb-2 text-[11px] font-bold uppercase tracking-pp-nav text-pp-body/60">
           Admin
         </p>
-        <Link
-          href="/admin/categories"
-          className="rounded px-2 py-1.5 hover:bg-slate-100"
-        >
-          Categories
-        </Link>
-        <Link
-          href="/admin/reports"
-          className="rounded px-2 py-1.5 hover:bg-slate-100"
-        >
-          Reports
-        </Link>
-        <Link
-          href="/admin/users"
-          className="rounded px-2 py-1.5 hover:bg-slate-100"
-        >
-          Users
-        </Link>
-        <Link
-          href="/admin/roles"
-          className="rounded px-2 py-1.5 hover:bg-slate-100"
-        >
-          Roles
-        </Link>
-        <div className="my-2 border-t border-slate-200" />
-        <Link
-          href="/dashboard"
-          className="rounded px-2 py-1.5 text-slate-600 hover:bg-slate-100"
-        >
+        <NavLink href="/admin/categories">Categories</NavLink>
+        <NavLink href="/admin/reports">Reports</NavLink>
+        <NavLink href="/admin/users">Users</NavLink>
+        <NavLink href="/admin/roles">Roles</NavLink>
+        <div className="my-2 border-t border-black/5" />
+        <NavLink href="/dashboard" muted>
           ← Back to dashboard
-        </Link>
+        </NavLink>
       </nav>
       <section>{children}</section>
     </div>
+  );
+}
+
+function NavLink({
+  href,
+  children,
+  muted = false,
+}: {
+  href: string;
+  children: React.ReactNode;
+  muted?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`rounded-pp-button px-2 py-1.5 font-medium transition hover:bg-pp-offwhite ${
+        muted ? "text-pp-body/60" : "text-pp-navy"
+      }`}
+    >
+      {children}
+    </Link>
   );
 }

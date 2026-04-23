@@ -25,7 +25,10 @@ export default async function ReportViewPage({
 }) {
   const user = await requireUser();
   const { id } = await params;
-  const report = await prisma.report.findUnique({ where: { id } });
+  const report = await prisma.report.findUnique({
+    where: { id },
+    include: { category: true },
+  });
   if (!report || !report.enabled) notFound();
 
   const allowed =
@@ -33,44 +36,53 @@ export default async function ReportViewPage({
   if (!allowed) notFound();
 
   const hasExport = Boolean(report.latestExportPath);
-  // Cache-bust by lastExportedAt so a fresh export loads a fresh blob
   const cacheKey = report.lastExportedAt
     ? `?t=${report.lastExportedAt.getTime()}`
     : "";
   const fileSrc = `/api/reports/${report.id}/file${cacheKey}`;
+  const downloadHref = `${fileSrc}${cacheKey ? "&" : "?"}download=1`;
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           {user.isAdmin ? (
             <Link
               href={`/admin/reports/${report.id}`}
-              className="text-sm text-slate-500 hover:underline"
+              className="text-xs font-semibold uppercase tracking-pp-nav text-pp-body/60 hover:text-pp-orange"
             >
               ← Admin
             </Link>
           ) : (
             <Link
               href="/dashboard"
-              className="text-sm text-slate-500 hover:underline"
+              className="text-xs font-semibold uppercase tracking-pp-nav text-pp-body/60 hover:text-pp-orange"
             >
               ← Dashboard
             </Link>
           )}
-          <h1 className="mt-1 text-2xl font-semibold text-pp-navy">
+          <div className="mt-2 flex items-center gap-3">
+            {report.category ? (
+              <span className="inline-flex items-center rounded-pp-pill bg-pp-navy/5 px-3 py-1 text-[11px] font-bold uppercase tracking-pp-nav text-pp-navy">
+                {report.category.name}
+              </span>
+            ) : null}
+            <p className="text-xs font-medium text-pp-body/60">
+              Last updated {formatAgo(report.lastExportedAt)}
+            </p>
+          </div>
+          <h1 className="mt-2 text-2xl font-bold tracking-pp-tight md:text-3xl">
             {report.name}
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            {report.description ?? null}
-            {report.description ? " · " : ""}Last updated {formatAgo(report.lastExportedAt)}
-          </p>
+          {report.description ? (
+            <p className="mt-1 text-sm text-pp-body/70">{report.description}</p>
+          ) : null}
         </div>
         <div className="flex flex-wrap gap-2">
           {hasExport ? (
             <a
-              href={`${fileSrc}${cacheKey ? "&" : "?"}download=1`}
-              className="rounded border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100"
+              href={downloadHref}
+              className="rounded-pp-button border border-black/10 bg-white px-4 py-2 text-sm font-semibold text-pp-navy shadow-pp-card-very-soft transition hover:bg-pp-offwhite"
             >
               Download
             </a>
@@ -80,7 +92,7 @@ export default async function ReportViewPage({
               <input type="hidden" name="id" value={report.id} />
               <button
                 type="submit"
-                className="rounded bg-pp-orange px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
+                className="rounded-pp-button-lg bg-pp-orange px-5 py-2 text-sm font-bold text-white transition hover:brightness-110"
               >
                 Export now
               </button>
@@ -91,7 +103,7 @@ export default async function ReportViewPage({
 
       {hasExport ? (
         report.exportFormat === "PNG" ? (
-          <div className="overflow-hidden rounded border border-slate-200 bg-white">
+          <div className="overflow-hidden rounded-pp-card bg-white shadow-pp-card-soft">
             <img
               src={fileSrc}
               alt={report.name}
@@ -102,10 +114,12 @@ export default async function ReportViewPage({
           <PdfViewer src={fileSrc} title={report.name} />
         )
       ) : (
-        <div className="rounded border border-dashed border-slate-300 bg-white p-10 text-center">
-          <p className="text-slate-600">
+        <div className="rounded-pp-card-lg bg-white p-10 text-center shadow-pp-card-very-soft">
+          <p className="text-pp-body/80">
             No export available yet.
-            {user.isAdmin ? " Click Export now above to generate one." : " Please check back soon."}
+            {user.isAdmin
+              ? " Click Export now above to generate one."
+              : " Please check back soon."}
           </p>
         </div>
       )}

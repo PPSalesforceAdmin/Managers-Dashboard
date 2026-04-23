@@ -37,67 +37,100 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   }
 
   return (
-    <div className="mx-auto max-w-sm py-12">
-      <h1 className="mb-6 text-2xl font-semibold text-pp-navy">Sign in</h1>
-      {changed ? (
-        <p className="mb-4 rounded border border-green-300 bg-green-50 p-3 text-sm text-green-800">
-          Password changed. Please sign in with your new password.
+    <div className="mx-auto max-w-md py-10 md:py-16">
+      <div className="rounded-pp-card-lg bg-white p-6 shadow-pp-card md:p-8">
+        <h1 className="mb-1 text-2xl font-bold tracking-pp-tight">Sign in</h1>
+        <p className="mb-6 text-sm text-pp-body/80">
+          Progressive Property managers portal
         </p>
-      ) : null}
-      <form action={handleLogin} className="space-y-4">
-        <input type="hidden" name="callbackUrl" value={callbackUrl ?? ""} />
-        <div>
-          <label className="block text-sm font-medium" htmlFor="email">
-            Email
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            autoComplete="email"
-            className="mt-1 w-full rounded border border-slate-300 px-3 py-2 focus:border-pp-orange focus:outline-none"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium" htmlFor="password">
-            Password
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            required
-            autoComplete="current-password"
-            className="mt-1 w-full rounded border border-slate-300 px-3 py-2 focus:border-pp-orange focus:outline-none"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium" htmlFor="totp">
-            Authenticator code <span className="text-slate-500">(if enabled)</span>
-          </label>
-          <input
-            id="totp"
-            name="totp"
-            type="text"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            maxLength={6}
-            className="mt-1 w-full rounded border border-slate-300 px-3 py-2 focus:border-pp-orange focus:outline-none"
-          />
-        </div>
-        {error ? (
-          <p className="text-sm text-red-600">
-            Invalid email, password, or code.
+
+        {changed ? (
+          <p className="mb-4 rounded-pp-button bg-green-50 p-3 text-sm text-green-800 ring-1 ring-green-200">
+            Password changed. Please sign in with your new password.
           </p>
         ) : null}
-        <button
-          type="submit"
-          className="w-full rounded bg-pp-orange px-4 py-2 font-medium text-white hover:bg-orange-600"
-        >
-          Sign in
-        </button>
-      </form>
+
+        <form action={handleLogin} className="space-y-4">
+          <input type="hidden" name="callbackUrl" value={callbackUrl ?? ""} />
+          <Field label="Email" htmlFor="email">
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              autoComplete="email"
+              className="w-full rounded-pp-button border border-black/10 bg-white px-3 py-2.5 text-pp-body outline-none transition focus:border-pp-orange focus:ring-2 focus:ring-pp-orange/20"
+            />
+          </Field>
+          <Field label="Password" htmlFor="password">
+            <input
+              id="password"
+              name="password"
+              type="password"
+              required
+              autoComplete="current-password"
+              className="w-full rounded-pp-button border border-black/10 bg-white px-3 py-2.5 text-pp-body outline-none transition focus:border-pp-orange focus:ring-2 focus:ring-pp-orange/20"
+            />
+          </Field>
+          <Field
+            label="Authenticator code"
+            htmlFor="totp"
+            hint="if MFA enabled"
+          >
+            <input
+              id="totp"
+              name="totp"
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              className="w-full rounded-pp-button border border-black/10 bg-white px-3 py-2.5 text-pp-body outline-none transition focus:border-pp-orange focus:ring-2 focus:ring-pp-orange/20"
+            />
+          </Field>
+
+          {error ? (
+            <p className="rounded-pp-button bg-red-50 p-3 text-sm text-red-700 ring-1 ring-red-200">
+              Invalid email, password, or code.
+            </p>
+          ) : null}
+
+          <button
+            type="submit"
+            className="w-full rounded-pp-button-lg bg-pp-orange px-4 py-3 text-sm font-bold text-white transition hover:brightness-110"
+          >
+            Sign in
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  htmlFor,
+  hint,
+  children,
+}: {
+  label: string;
+  htmlFor: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label
+        htmlFor={htmlFor}
+        className="mb-1.5 flex items-baseline justify-between text-xs font-semibold uppercase tracking-pp-nav text-pp-navy"
+      >
+        <span>{label}</span>
+        {hint ? (
+          <span className="text-[11px] font-medium normal-case tracking-normal text-pp-body/60">
+            {hint}
+          </span>
+        ) : null}
+      </label>
+      {children}
     </div>
   );
 }

@@ -16,7 +16,7 @@ export default async function NewReportPage() {
       <div>
         <Link
           href="/admin/reports"
-          className="text-sm text-slate-500 hover:underline"
+          className="text-sm text-pp-body/60 hover:underline"
         >
           ← Reports
         </Link>
@@ -25,19 +25,19 @@ export default async function NewReportPage() {
 
       <form
         action={createReport}
-        className="rounded border border-slate-200 bg-white p-5"
+        className="rounded-pp-card bg-white shadow-pp-card-very-soft p-5"
       >
         <ReportFormFields categories={categories} />
         <div className="mt-6 flex justify-end gap-2">
           <Link
             href="/admin/reports"
-            className="rounded border border-slate-300 px-4 py-2 text-sm hover:bg-slate-100"
+            className="rounded-pp-button border border-black/10 px-4 py-2 text-sm hover:bg-pp-offwhite"
           >
             Cancel
           </Link>
           <button
             type="submit"
-            className="rounded bg-pp-orange px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
+            className="rounded-pp-button-lg bg-pp-orange px-5 py-2 text-sm font-bold text-white transition hover:brightness-110"
           >
             Create report
           </button>

@@ -3,8 +3,11 @@
 @tailwind utilities;
 
 :root {
-  --pp-orange: #F26522;
-  --pp-navy: #1a2744;
+  --pp-orange: #FF520B;
+  --pp-orange-hover: #E54A0A;
+  --pp-navy: #222D57;
+  --pp-amber: #FFA733;
+  --pp-body: #484848;
 }
 
 html,
@@ -13,8 +16,24 @@ body {
 }
 
 body {
-  background-color: #f8fafc;
-  color: #0f172a;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, sans-serif;
+  background-color: #F8F8F8;
+  color: rgba(72, 72, 72, 0.9);
+  font-feature-settings: "cv11", "ss01", "ss03";
+}
+
+/* Subtle focus ring tuned to PP orange */
+*:focus-visible {
+  outline: 2px solid var(--pp-orange);
+  outline-offset: 2px;
+}
+
+/* Headings default to PP navy on light bg */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--pp-navy);
+  letter-spacing: -0.25px;
 }

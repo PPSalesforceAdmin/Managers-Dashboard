@@ -46,14 +46,14 @@ export default async function EditUserPage({ params, searchParams }: Props) {
       <div>
         <Link
           href="/admin/users"
-          className="text-sm text-slate-500 hover:underline"
+          className="text-sm text-pp-body/60 hover:underline"
         >
           ← Users
         </Link>
         <h1 className="mt-1 text-2xl font-semibold text-pp-navy">
           {user.email}
         </h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-pp-body/60">
           {user.status === "ACTIVE" ? "Active" : "Disabled"} ·{" "}
           {user.isAdmin ? "Administrator" : "Viewer"}
           {user.forcePasswordChange ? " · Must change password on next login" : ""}
@@ -62,7 +62,7 @@ export default async function EditUserPage({ params, searchParams }: Props) {
       </div>
 
       {tempPassword ? (
-        <div className="rounded border border-amber-300 bg-amber-50 p-4">
+        <div className="rounded-pp-card border border-pp-amber/40 bg-pp-amber/10 p-4">
           <p className="text-sm font-semibold text-amber-900">
             Temporary password — shown once
           </p>
@@ -76,12 +76,12 @@ export default async function EditUserPage({ params, searchParams }: Props) {
         </div>
       ) : null}
 
-      <section className="rounded border border-slate-200 bg-white p-5">
+      <section className="rounded-pp-card bg-white shadow-pp-card-very-soft p-5">
         <h2 className="mb-3 font-semibold text-pp-navy">Profile</h2>
         <form action={updateUser} className="grid gap-4">
           <input type="hidden" name="id" value={user.id} />
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label className="mb-1 block text-sm font-medium text-pp-navy">
               Email
             </label>
             <input
@@ -89,7 +89,7 @@ export default async function EditUserPage({ params, searchParams }: Props) {
               name="email"
               required
               defaultValue={user.email}
-              className="w-full rounded border border-slate-300 px-3 py-2"
+              className="w-full rounded-pp-button border border-black/10 px-3 py-2"
             />
           </div>
           <label className="flex items-center gap-2 text-sm">
@@ -102,7 +102,7 @@ export default async function EditUserPage({ params, searchParams }: Props) {
             />
             Administrator
             {isSelf ? (
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-pp-body/60">
                 (you can't demote yourself)
               </span>
             ) : null}
@@ -110,7 +110,7 @@ export default async function EditUserPage({ params, searchParams }: Props) {
           <div className="flex justify-end">
             <button
               type="submit"
-              className="rounded bg-pp-orange px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
+              className="rounded-pp-button-lg bg-pp-orange px-5 py-2 text-sm font-bold text-white transition hover:brightness-110"
             >
               Save profile
             </button>
@@ -118,15 +118,15 @@ export default async function EditUserPage({ params, searchParams }: Props) {
         </form>
       </section>
 
-      <section className="rounded border border-slate-200 bg-white p-5">
+      <section className="rounded-pp-card bg-white shadow-pp-card-very-soft p-5">
         <h2 className="mb-3 font-semibold text-pp-navy">Roles</h2>
-        <p className="mb-3 text-sm text-slate-600">
+        <p className="mb-3 text-sm text-pp-body/80">
           Each role grants access to a set of reports. Overlapping roles are unioned.
         </p>
         <form action={setUserRoles} className="space-y-2">
           <input type="hidden" name="id" value={user.id} />
           {roles.length === 0 ? (
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-pp-body/60">
               No roles yet.{" "}
               <Link href="/admin/roles/new" className="text-pp-orange underline">
                 Create one →
@@ -145,7 +145,7 @@ export default async function EditUserPage({ params, searchParams }: Props) {
                 <span>
                   {r.name}
                   {r.description ? (
-                    <span className="ml-2 text-slate-500">
+                    <span className="ml-2 text-pp-body/60">
                       — {r.description}
                     </span>
                   ) : null}
@@ -157,7 +157,7 @@ export default async function EditUserPage({ params, searchParams }: Props) {
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="rounded border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100"
+                className="rounded-pp-button border border-black/10 px-3 py-1.5 text-sm hover:bg-pp-offwhite"
               >
                 Save roles
               </button>
@@ -166,16 +166,16 @@ export default async function EditUserPage({ params, searchParams }: Props) {
         </form>
       </section>
 
-      <section className="rounded border border-slate-200 bg-white p-5">
+      <section className="rounded-pp-card bg-white shadow-pp-card-very-soft p-5">
         <h2 className="mb-3 font-semibold text-pp-navy">Direct report access</h2>
-        <p className="mb-3 text-sm text-slate-600">
+        <p className="mb-3 text-sm text-pp-body/80">
           Grant access to individual reports, in addition to anything the user
           gets via their roles.
         </p>
         <form action={setUserReportGrants} className="space-y-2">
           <input type="hidden" name="id" value={user.id} />
           {reports.length === 0 ? (
-            <p className="text-sm text-slate-500">No reports to grant yet.</p>
+            <p className="text-sm text-pp-body/60">No reports to grant yet.</p>
           ) : (
             <div className="grid gap-1 md:grid-cols-2">
               {reports.map((r) => (
@@ -190,7 +190,7 @@ export default async function EditUserPage({ params, searchParams }: Props) {
                   <span>
                     {r.name}
                     {r.category ? (
-                      <span className="ml-2 text-xs text-slate-500">
+                      <span className="ml-2 text-xs text-pp-body/60">
                         [{r.category.name}]
                       </span>
                     ) : null}
@@ -203,7 +203,7 @@ export default async function EditUserPage({ params, searchParams }: Props) {
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="rounded border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100"
+                className="rounded-pp-button border border-black/10 px-3 py-1.5 text-sm hover:bg-pp-offwhite"
               >
                 Save grants
               </button>
@@ -212,14 +212,14 @@ export default async function EditUserPage({ params, searchParams }: Props) {
         </form>
       </section>
 
-      <section className="rounded border border-slate-200 bg-white p-5">
+      <section className="rounded-pp-card bg-white shadow-pp-card-very-soft p-5">
         <h2 className="mb-3 font-semibold text-pp-navy">Account actions</h2>
         <div className="grid gap-3 md:grid-cols-2">
           <form action={resetUserPassword}>
             <input type="hidden" name="id" value={user.id} />
             <button
               type="submit"
-              className="w-full rounded border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100"
+              className="w-full rounded-pp-button border border-black/10 px-3 py-2 text-sm hover:bg-pp-offwhite"
             >
               Reset password (generates temp)
             </button>
@@ -230,7 +230,7 @@ export default async function EditUserPage({ params, searchParams }: Props) {
               <input type="hidden" name="id" value={user.id} />
               <button
                 type="submit"
-                className="w-full rounded border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100"
+                className="w-full rounded-pp-button border border-black/10 px-3 py-2 text-sm hover:bg-pp-offwhite"
               >
                 Reset MFA (user re-enrols on next login)
               </button>
@@ -239,7 +239,7 @@ export default async function EditUserPage({ params, searchParams }: Props) {
             <button
               type="button"
               disabled
-              className="w-full cursor-not-allowed rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-400"
+              className="w-full cursor-not-allowed rounded border border-black/5 bg-pp-offwhite px-3 py-2 text-sm text-slate-400"
             >
               MFA not enrolled
             </button>
@@ -252,7 +252,7 @@ export default async function EditUserPage({ params, searchParams }: Props) {
               <button
                 type="submit"
                 disabled={isSelf}
-                className="w-full rounded border border-red-200 px-3 py-2 text-sm text-red-600 enabled:hover:bg-red-50 disabled:opacity-40"
+                className="w-full rounded-pp-button border border-red-200 px-3 py-2 text-sm text-red-600 enabled:hover:bg-red-50 disabled:opacity-40"
               >
                 Disable account
               </button>
@@ -263,7 +263,7 @@ export default async function EditUserPage({ params, searchParams }: Props) {
               <input type="hidden" name="status" value="ACTIVE" />
               <button
                 type="submit"
-                className="w-full rounded border border-green-200 px-3 py-2 text-sm text-green-700 hover:bg-green-50"
+                className="w-full rounded-pp-button border border-green-200 px-3 py-2 text-sm text-green-700 hover:bg-green-50"
               >
                 Re-enable account
               </button>

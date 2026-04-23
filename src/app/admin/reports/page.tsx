@@ -26,22 +26,22 @@ export default async function ReportsAdminPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-pp-navy">Reports</h1>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-pp-body/80">
             Each report maps to one Tableau view. The worker exports them on
             their individual schedule; admins can trigger an export manually.
           </p>
         </div>
         <Link
           href="/admin/reports/new"
-          className="rounded bg-pp-orange px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
+          className="rounded-pp-button-lg bg-pp-orange px-5 py-2 text-sm font-bold text-white transition hover:brightness-110"
         >
           + New report
         </Link>
       </div>
 
-      <div className="overflow-hidden rounded border border-slate-200 bg-white">
+      <div className="overflow-hidden rounded-pp-card bg-white shadow-pp-card-very-soft">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+          <thead className="bg-pp-offwhite text-left text-xs uppercase tracking-pp-nav text-pp-body/60">
             <tr>
               <th className="px-4 py-2">Name</th>
               <th className="px-4 py-2">Category</th>
@@ -54,30 +54,30 @@ export default async function ReportsAdminPage() {
           <tbody>
             {reports.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-slate-500">
+                <td colSpan={6} className="px-4 py-6 text-center text-pp-body/60">
                   No reports yet. <Link className="text-pp-orange underline" href="/admin/reports/new">Create the first one →</Link>
                 </td>
               </tr>
             ) : (
               reports.map((r) => (
-                <tr key={r.id} className="border-t border-slate-200">
+                <tr key={r.id} className="border-t border-black/5">
                   <td className="px-4 py-2 font-medium">{r.name}</td>
-                  <td className="px-4 py-2 text-slate-500">
+                  <td className="px-4 py-2 text-pp-body/60">
                     {r.category?.name ?? "—"}
                   </td>
-                  <td className="px-4 py-2 text-slate-500">
+                  <td className="px-4 py-2 text-pp-body/60">
                     {formatAgo(r.lastExportedAt)}
                   </td>
                   <td className="px-4 py-2">
                     <StatusBadge status={r.lastExportStatus} />
                   </td>
-                  <td className="px-4 py-2 text-slate-500">
+                  <td className="px-4 py-2 text-pp-body/60">
                     {r.enabled ? "Yes" : "No"}
                   </td>
                   <td className="px-4 py-2 text-right">
                     <Link
                       href={`/admin/reports/${r.id}`}
-                      className="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-100"
+                      className="rounded-pp-button border border-black/10 px-2 py-1 text-xs hover:bg-pp-offwhite"
                     >
                       Edit
                     </Link>
@@ -94,7 +94,7 @@ export default async function ReportsAdminPage() {
 
 function StatusBadge({ status }: { status: "PENDING" | "SUCCESS" | "FAILED" }) {
   const styles: Record<typeof status, string> = {
-    PENDING: "bg-slate-100 text-slate-600",
+    PENDING: "bg-slate-100 text-pp-body/80",
     SUCCESS: "bg-green-100 text-green-700",
     FAILED: "bg-red-100 text-red-700",
   };

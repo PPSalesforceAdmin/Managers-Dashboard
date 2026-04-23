@@ -38,7 +38,7 @@ export default async function EditReportPage({
         <div>
           <Link
             href="/admin/reports"
-            className="text-sm text-slate-500 hover:underline"
+            className="text-sm text-pp-body/60 hover:underline"
           >
             ← Reports
           </Link>
@@ -50,7 +50,7 @@ export default async function EditReportPage({
           {report.latestExportPath ? (
             <Link
               href={`/reports/${report.id}`}
-              className="rounded border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100"
+              className="rounded-pp-button border border-black/10 px-3 py-2 text-sm hover:bg-pp-offwhite"
             >
               View latest PDF →
             </Link>
@@ -59,7 +59,7 @@ export default async function EditReportPage({
             <input type="hidden" name="id" value={report.id} />
             <button
               type="submit"
-              className="rounded bg-pp-orange px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
+              className="rounded-pp-button-lg bg-pp-orange px-5 py-2 text-sm font-bold text-white transition hover:brightness-110"
             >
               Export now
             </button>
@@ -69,7 +69,7 @@ export default async function EditReportPage({
 
       <form
         action={updateReport}
-        className="rounded border border-slate-200 bg-white p-5"
+        className="rounded-pp-card bg-white shadow-pp-card-very-soft p-5"
       >
         <input type="hidden" name="id" value={report.id} />
         <ReportFormFields categories={categories} report={report} />
@@ -78,14 +78,14 @@ export default async function EditReportPage({
             <input type="hidden" name="id" value={report.id} />
             <button
               type="submit"
-              className="rounded border border-red-200 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+              className="rounded-pp-button border border-red-200 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
             >
               Delete report
             </button>
           </form>
           <button
             type="submit"
-            className="rounded bg-pp-orange px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
+            className="rounded-pp-button-lg bg-pp-orange px-5 py-2 text-sm font-bold text-white transition hover:brightness-110"
           >
             Save changes
           </button>
@@ -93,12 +93,12 @@ export default async function EditReportPage({
       </form>
 
       <div>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
+        <h2 className="mb-2 text-sm font-semibold uppercase tracking-pp-nav text-pp-body/60">
           Recent export runs
         </h2>
-        <div className="overflow-hidden rounded border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-pp-card bg-white shadow-pp-card-very-soft">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+            <thead className="bg-pp-offwhite text-left text-xs uppercase tracking-pp-nav text-pp-body/60">
               <tr>
                 <th className="px-4 py-2">Started</th>
                 <th className="px-4 py-2">Completed</th>
@@ -110,23 +110,23 @@ export default async function EditReportPage({
             <tbody>
               {lastRuns.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-6 text-center text-slate-500">
+                  <td colSpan={5} className="px-4 py-6 text-center text-pp-body/60">
                     No runs yet.
                   </td>
                 </tr>
               ) : (
                 lastRuns.map((run) => (
-                  <tr key={run.id} className="border-t border-slate-200">
-                    <td className="px-4 py-2 text-slate-500">
+                  <tr key={run.id} className="border-t border-black/5">
+                    <td className="px-4 py-2 text-pp-body/60">
                       {run.startedAt.toISOString().replace("T", " ").slice(0, 19)}
                     </td>
-                    <td className="px-4 py-2 text-slate-500">
+                    <td className="px-4 py-2 text-pp-body/60">
                       {run.completedAt
                         ? run.completedAt.toISOString().replace("T", " ").slice(0, 19)
                         : "—"}
                     </td>
                     <td className="px-4 py-2">{run.status}</td>
-                    <td className="px-4 py-2 text-slate-500">
+                    <td className="px-4 py-2 text-pp-body/60">
                       {run.fileSizeBytes
                         ? `${(run.fileSizeBytes / 1024).toFixed(0)} KB`
                         : "—"}

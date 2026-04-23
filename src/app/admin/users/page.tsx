@@ -25,22 +25,22 @@ export default async function UsersAdminPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-pp-navy">Users</h1>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-pp-body/80">
             Create viewers, grant report access, reset passwords, toggle
             admin rights. Users are never hard-deleted — disable instead.
           </p>
         </div>
         <Link
           href="/admin/users/new"
-          className="rounded bg-pp-orange px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
+          className="rounded-pp-button-lg bg-pp-orange px-5 py-2 text-sm font-bold text-white transition hover:brightness-110"
         >
           + New user
         </Link>
       </div>
 
-      <div className="overflow-hidden rounded border border-slate-200 bg-white">
+      <div className="overflow-hidden rounded-pp-card bg-white shadow-pp-card-very-soft">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+          <thead className="bg-pp-offwhite text-left text-xs uppercase tracking-pp-nav text-pp-body/60">
             <tr>
               <th className="px-4 py-2">Email</th>
               <th className="px-4 py-2">Admin</th>
@@ -53,29 +53,29 @@ export default async function UsersAdminPage() {
           </thead>
           <tbody>
             {users.map((u) => (
-              <tr key={u.id} className="border-t border-slate-200">
+              <tr key={u.id} className="border-t border-black/5">
                 <td className="px-4 py-2 font-medium">{u.email}</td>
-                <td className="px-4 py-2 text-slate-500">{u.isAdmin ? "Yes" : "No"}</td>
+                <td className="px-4 py-2 text-pp-body/60">{u.isAdmin ? "Yes" : "No"}</td>
                 <td className="px-4 py-2">
                   <span
                     className={`inline-flex items-center rounded px-2 py-0.5 text-xs ${
                       u.status === "ACTIVE"
                         ? "bg-green-100 text-green-700"
-                        : "bg-slate-200 text-slate-600"
+                        : "bg-slate-200 text-pp-body/80"
                     }`}
                   >
                     {u.status}
                   </span>
                 </td>
-                <td className="px-4 py-2 text-slate-500">{u._count.roles}</td>
-                <td className="px-4 py-2 text-slate-500">{u._count.reportGrants}</td>
-                <td className="px-4 py-2 text-slate-500">
+                <td className="px-4 py-2 text-pp-body/60">{u._count.roles}</td>
+                <td className="px-4 py-2 text-pp-body/60">{u._count.reportGrants}</td>
+                <td className="px-4 py-2 text-pp-body/60">
                   {formatAgo(u.lastLoginAt)}
                 </td>
                 <td className="px-4 py-2 text-right">
                   <Link
                     href={`/admin/users/${u.id}`}
-                    className="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-100"
+                    className="rounded-pp-button border border-black/10 px-2 py-1 text-xs hover:bg-pp-offwhite"
                   >
                     Edit
                   </Link>

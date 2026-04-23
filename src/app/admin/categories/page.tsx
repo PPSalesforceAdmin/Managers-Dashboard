@@ -68,43 +68,43 @@ export default async function CategoriesPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-pp-navy">Categories</h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-pp-body/80">
           Group reports on the landing page. Lower sort order appears first.
         </p>
       </div>
 
       <form
         action={createCategory}
-        className="grid gap-3 rounded border border-slate-200 bg-white p-4 md:grid-cols-[2fr_3fr_1fr_auto]"
+        className="grid gap-3 rounded-pp-card bg-white shadow-pp-card-very-soft p-4 md:grid-cols-[2fr_3fr_1fr_auto]"
       >
         <input
           name="name"
           placeholder="Name"
           required
-          className="rounded border border-slate-300 px-3 py-2"
+          className="rounded-pp-button border border-black/10 px-3 py-2"
         />
         <input
           name="description"
           placeholder="Description (optional)"
-          className="rounded border border-slate-300 px-3 py-2"
+          className="rounded-pp-button border border-black/10 px-3 py-2"
         />
         <input
           name="sortOrder"
           type="number"
           defaultValue={0}
-          className="rounded border border-slate-300 px-3 py-2"
+          className="rounded-pp-button border border-black/10 px-3 py-2"
         />
         <button
           type="submit"
-          className="rounded bg-pp-orange px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
+          className="rounded-pp-button-lg bg-pp-orange px-5 py-2 text-sm font-bold text-white transition hover:brightness-110"
         >
           Add
         </button>
       </form>
 
-      <div className="overflow-hidden rounded border border-slate-200 bg-white">
+      <div className="overflow-hidden rounded-pp-card bg-white shadow-pp-card-very-soft">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+          <thead className="bg-pp-offwhite text-left text-xs uppercase tracking-pp-nav text-pp-body/60">
             <tr>
               <th className="px-4 py-2">Name</th>
               <th className="px-4 py-2">Sort</th>
@@ -115,37 +115,37 @@ export default async function CategoriesPage() {
           <tbody>
             {categories.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
+                <td colSpan={4} className="px-4 py-6 text-center text-pp-body/60">
                   No categories yet.
                 </td>
               </tr>
             ) : (
               categories.map((c) => (
-                <tr key={c.id} className="border-t border-slate-200">
+                <tr key={c.id} className="border-t border-black/5">
                   <td className="px-4 py-2">
                     <form action={renameCategory} className="flex gap-2">
                       <input type="hidden" name="id" value={c.id} />
                       <input
                         name="name"
                         defaultValue={c.name}
-                        className="flex-1 rounded border border-slate-300 px-2 py-1"
+                        className="flex-1 rounded-pp-button border border-black/10 px-2 py-1"
                       />
                       <input
                         name="sortOrder"
                         type="number"
                         defaultValue={c.sortOrder}
-                        className="w-16 rounded border border-slate-300 px-2 py-1"
+                        className="w-16 rounded-pp-button border border-black/10 px-2 py-1"
                       />
                       <button
                         type="submit"
-                        className="rounded border border-slate-300 px-2 py-1 hover:bg-slate-100"
+                        className="rounded-pp-button border border-black/10 px-2 py-1 hover:bg-pp-offwhite"
                       >
                         Save
                       </button>
                     </form>
                   </td>
-                  <td className="px-4 py-2 text-slate-500">{c.sortOrder}</td>
-                  <td className="px-4 py-2 text-slate-500">{c._count.reports}</td>
+                  <td className="px-4 py-2 text-pp-body/60">{c.sortOrder}</td>
+                  <td className="px-4 py-2 text-pp-body/60">{c._count.reports}</td>
                   <td className="px-4 py-2 text-right">
                     <form action={deleteCategory} className="inline">
                       <input type="hidden" name="id" value={c.id} />
@@ -157,7 +157,7 @@ export default async function CategoriesPage() {
                             ? "Can't delete: category has reports"
                             : undefined
                         }
-                        className="rounded border border-red-200 px-2 py-1 text-red-600 enabled:hover:bg-red-50 disabled:opacity-40"
+                        className="rounded-pp-button border border-red-200 px-2 py-1 text-red-600 enabled:hover:bg-red-50 disabled:opacity-40"
                       >
                         Delete
                       </button>

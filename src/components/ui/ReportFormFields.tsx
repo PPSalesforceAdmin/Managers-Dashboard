@@ -28,7 +28,7 @@ export function ReportFormFields({ categories, report }: Props) {
           name="name"
           defaultValue={defaults.name}
           required
-          className="w-full rounded border border-slate-300 px-3 py-2"
+          className="w-full rounded-pp-button border border-black/10 px-3 py-2"
         />
       </Field>
 
@@ -36,7 +36,7 @@ export function ReportFormFields({ categories, report }: Props) {
         <input
           name="description"
           defaultValue={defaults.description}
-          className="w-full rounded border border-slate-300 px-3 py-2"
+          className="w-full rounded-pp-button border border-black/10 px-3 py-2"
         />
       </Field>
 
@@ -44,7 +44,7 @@ export function ReportFormFields({ categories, report }: Props) {
         <select
           name="categoryId"
           defaultValue={defaults.categoryId}
-          className="w-full rounded border border-slate-300 px-3 py-2"
+          className="w-full rounded-pp-button border border-black/10 px-3 py-2"
         >
           <option value="">— none —</option>
           {categories.map((c) => (
@@ -64,7 +64,7 @@ export function ReportFormFields({ categories, report }: Props) {
           defaultValue={defaults.tableauViewId}
           required
           placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-          className="w-full rounded border border-slate-300 px-3 py-2 font-mono text-xs"
+          className="w-full rounded-pp-button border border-black/10 px-3 py-2 font-mono text-xs"
         />
       </Field>
 
@@ -75,7 +75,7 @@ export function ReportFormFields({ categories, report }: Props) {
         <input
           name="tableauContentUrl"
           defaultValue={defaults.tableauContentUrl}
-          className="w-full rounded border border-slate-300 px-3 py-2 font-mono text-xs"
+          className="w-full rounded-pp-button border border-black/10 px-3 py-2 font-mono text-xs"
         />
       </Field>
 
@@ -87,7 +87,7 @@ export function ReportFormFields({ categories, report }: Props) {
           name="filterParams"
           defaultValue={defaults.filterParams}
           rows={3}
-          className="w-full rounded border border-slate-300 px-3 py-2 font-mono text-xs"
+          className="w-full rounded-pp-button border border-black/10 px-3 py-2 font-mono text-xs"
         />
       </Field>
 
@@ -96,7 +96,7 @@ export function ReportFormFields({ categories, report }: Props) {
           <select
             name="exportFormat"
             defaultValue={defaults.exportFormat}
-            className="w-full rounded border border-slate-300 px-3 py-2"
+            className="w-full rounded-pp-button border border-black/10 px-3 py-2"
           >
             <option value="PDF">PDF</option>
             <option value="PNG">PNG</option>
@@ -107,7 +107,7 @@ export function ReportFormFields({ categories, report }: Props) {
           <select
             name="orientation"
             defaultValue={defaults.orientation}
-            className="w-full rounded border border-slate-300 px-3 py-2"
+            className="w-full rounded-pp-button border border-black/10 px-3 py-2"
           >
             <option value="LANDSCAPE">Landscape</option>
             <option value="PORTRAIT">Portrait</option>
@@ -122,7 +122,7 @@ export function ReportFormFields({ categories, report }: Props) {
         <input
           name="refreshCron"
           defaultValue={defaults.refreshCron}
-          className="w-full rounded border border-slate-300 px-3 py-2 font-mono text-xs"
+          className="w-full rounded-pp-button border border-black/10 px-3 py-2 font-mono text-xs"
         />
       </Field>
 
@@ -150,12 +150,12 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium text-slate-700">
+      <label className="mb-1 block text-sm font-medium text-pp-navy">
         {label}
       </label>
       {children}
       {hint ? (
-        <p className="mt-1 text-xs text-slate-500">{hint}</p>
+        <p className="mt-1 text-xs text-pp-body/60">{hint}</p>
       ) : null}
     </div>
   );

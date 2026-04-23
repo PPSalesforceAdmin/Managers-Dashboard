@@ -9,7 +9,7 @@ export default async function NewRolePage() {
       <div>
         <Link
           href="/admin/roles"
-          className="text-sm text-slate-500 hover:underline"
+          className="text-sm text-pp-body/60 hover:underline"
         >
           ← Roles
         </Link>
@@ -18,38 +18,38 @@ export default async function NewRolePage() {
 
       <form
         action={createRole}
-        className="space-y-4 rounded border border-slate-200 bg-white p-5"
+        className="space-y-4 rounded-pp-card bg-white shadow-pp-card-very-soft p-5"
       >
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
+          <label className="mb-1 block text-sm font-medium text-pp-navy">
             Name
           </label>
           <input
             name="name"
             required
-            className="w-full rounded border border-slate-300 px-3 py-2"
+            className="w-full rounded-pp-button border border-black/10 px-3 py-2"
             placeholder="e.g. CET Managers"
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
+          <label className="mb-1 block text-sm font-medium text-pp-navy">
             Description
           </label>
           <input
             name="description"
-            className="w-full rounded border border-slate-300 px-3 py-2"
+            className="w-full rounded-pp-button border border-black/10 px-3 py-2"
           />
         </div>
         <div className="flex justify-end gap-2">
           <Link
             href="/admin/roles"
-            className="rounded border border-slate-300 px-4 py-2 text-sm hover:bg-slate-100"
+            className="rounded-pp-button border border-black/10 px-4 py-2 text-sm hover:bg-pp-offwhite"
           >
             Cancel
           </Link>
           <button
             type="submit"
-            className="rounded bg-pp-orange px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
+            className="rounded-pp-button-lg bg-pp-orange px-5 py-2 text-sm font-bold text-white transition hover:brightness-110"
           >
             Create role
           </button>
