@@ -134,8 +134,9 @@ export class TableauClient {
     const { siteLuid } = this.ensureSignedIn();
     const params = new URLSearchParams();
     if (kind === "pdf") {
-      params.set("type", "a4");
+      params.set("type", "A4");
       params.set("orientation", options.orientation ?? "landscape");
+      params.set("maxAge", "1");
     }
     if (options.filterParams) {
       for (const [k, v] of Object.entries(options.filterParams)) {
@@ -144,6 +145,15 @@ export class TableauClient {
     }
     const qs = params.toString();
     return `${this.baseUrl()}/sites/${siteLuid}/views/${viewLuid}/${kind}${qs ? `?${qs}` : ""}`;
+  }
+
+  private async failureBody(res: Response): Promise<string> {
+    try {
+      const text = await res.text();
+      return text.slice(0, 400);
+    } catch {
+      return "";
+    }
   }
 
   async exportViewPdf(
@@ -155,15 +165,16 @@ export class TableauClient {
 
     const res = await fetch(url, {
       method: "GET",
-      headers: { "X-Tableau-Auth": token, Accept: "application/pdf" },
+      headers: { "X-Tableau-Auth": token, Accept: "*/*" },
     });
 
     if (res.status === 404) {
       throw new TableauNotFoundError(`View ${viewLuid} not found`);
     }
     if (!res.ok) {
+      const body = await this.failureBody(res);
       throw new TableauExportError(
-        `Tableau PDF export failed (${res.status})`,
+        `Tableau PDF export failed (${res.status}): ${body}`,
         res.status,
       );
     }
@@ -181,15 +192,16 @@ export class TableauClient {
 
     const res = await fetch(url, {
       method: "GET",
-      headers: { "X-Tableau-Auth": token, Accept: "image/png" },
+      headers: { "X-Tableau-Auth": token, Accept: "*/*" },
     });
 
     if (res.status === 404) {
       throw new TableauNotFoundError(`View ${viewLuid} not found`);
     }
     if (!res.ok) {
+      const body = await this.failureBody(res);
       throw new TableauExportError(
-        `Tableau PNG export failed (${res.status})`,
+        `Tableau PNG export failed (${res.status}): ${body}`,
         res.status,
       );
     }
