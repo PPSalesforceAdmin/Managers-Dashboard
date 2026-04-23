@@ -72,21 +72,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               className="w-full rounded-pp-button border border-black/10 bg-white px-3 py-2.5 text-pp-body outline-none transition focus:border-pp-orange focus:ring-2 focus:ring-pp-orange/20"
             />
           </Field>
-          <Field
-            label="Authenticator code"
-            htmlFor="totp"
-            hint="if MFA enabled"
-          >
-            <input
-              id="totp"
-              name="totp"
-              type="text"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              maxLength={6}
-              className="w-full rounded-pp-button border border-black/10 bg-white px-3 py-2.5 text-pp-body outline-none transition focus:border-pp-orange focus:ring-2 focus:ring-pp-orange/20"
-            />
-          </Field>
 
           {error ? (
             <p className="rounded-pp-button bg-red-50 p-3 text-sm text-red-700 ring-1 ring-red-200">

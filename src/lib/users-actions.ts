@@ -11,6 +11,7 @@ import { generateTempPassword } from "@/lib/passwords";
 export async function createUser(formData: FormData): Promise<void> {
   const admin = await requireAdmin();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const name = String(formData.get("name") ?? "").trim() || null;
   const isAdmin = formData.get("isAdmin") === "on";
   if (!email || !email.includes("@")) throw new Error("Valid email required");
 
@@ -23,6 +24,7 @@ export async function createUser(formData: FormData): Promise<void> {
   const user = await prisma.user.create({
     data: {
       email,
+      name,
       passwordHash,
       isAdmin,
       status: "ACTIVE",
@@ -47,12 +49,13 @@ export async function updateUser(formData: FormData): Promise<void> {
   if (!id) throw new Error("User id missing");
 
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const name = String(formData.get("name") ?? "").trim() || null;
   const isAdmin = formData.get("isAdmin") === "on";
   if (!email || !email.includes("@")) throw new Error("Valid email required");
 
   await prisma.user.update({
     where: { id },
-    data: { email, isAdmin },
+    data: { email, name, isAdmin },
   });
   await logAuditEvent({
     userId: admin.id,

@@ -27,6 +27,22 @@ export default async function NewUserPage() {
       >
         <div>
           <label className="mb-1 block text-sm font-medium text-pp-navy">
+            Name
+          </label>
+          <input
+            type="text"
+            name="name"
+            autoComplete="off"
+            className="w-full rounded-pp-button border border-black/10 px-3 py-2"
+            placeholder="e.g. Conor Nicholls"
+          />
+          <p className="mt-1 text-xs text-pp-body/60">
+            Shown on the dashboard greeting. Optional — falls back to the email prefix.
+          </p>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-pp-navy">
             Email
           </label>
           <input

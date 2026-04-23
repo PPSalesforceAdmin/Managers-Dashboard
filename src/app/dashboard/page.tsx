@@ -60,7 +60,7 @@ export default async function DashboardPage() {
           <h1 className="mt-1 text-3xl font-bold tracking-pp-tight md:text-4xl">
             Welcome back,{" "}
             <span className="text-pp-orange">
-              {session.user.email.split("@")[0]}
+              {session.user.name ?? session.user.email.split("@")[0]}
             </span>
           </h1>
         </div>

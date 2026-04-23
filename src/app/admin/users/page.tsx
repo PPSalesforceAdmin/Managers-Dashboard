@@ -42,6 +42,7 @@ export default async function UsersAdminPage() {
         <table className="w-full text-sm">
           <thead className="bg-pp-offwhite text-left text-xs uppercase tracking-pp-nav text-pp-body/60">
             <tr>
+              <th className="px-4 py-2">Name</th>
               <th className="px-4 py-2">Email</th>
               <th className="px-4 py-2">Admin</th>
               <th className="px-4 py-2">Status</th>
@@ -54,7 +55,10 @@ export default async function UsersAdminPage() {
           <tbody>
             {users.map((u) => (
               <tr key={u.id} className="border-t border-black/5">
-                <td className="px-4 py-2 font-medium">{u.email}</td>
+                <td className="px-4 py-2 font-medium">
+                  {u.name ?? <span className="text-pp-body/50">—</span>}
+                </td>
+                <td className="px-4 py-2 text-pp-body/80">{u.email}</td>
                 <td className="px-4 py-2 text-pp-body/60">{u.isAdmin ? "Yes" : "No"}</td>
                 <td className="px-4 py-2">
                   <span

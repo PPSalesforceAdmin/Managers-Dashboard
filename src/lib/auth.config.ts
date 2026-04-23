@@ -5,6 +5,7 @@ declare module "next-auth" {
     user: {
       id: string;
       email: string;
+      name: string | null;
       isAdmin: boolean;
       forcePasswordChange: boolean;
     } & DefaultSession["user"];
@@ -13,6 +14,7 @@ declare module "next-auth" {
     id?: string;
     isAdmin?: boolean;
     forcePasswordChange?: boolean;
+    name?: string | null;
   }
 }
 
@@ -37,6 +39,7 @@ export const authConfig = {
         token.userId = user.id;
         token.isAdmin = Boolean(user.isAdmin);
         token.forcePasswordChange = Boolean(user.forcePasswordChange);
+        token.displayName = user.name ?? null;
       }
       return token;
     },
@@ -45,6 +48,8 @@ export const authConfig = {
         session.user.id = token.userId;
         session.user.isAdmin = Boolean(token.isAdmin);
         session.user.forcePasswordChange = Boolean(token.forcePasswordChange);
+        session.user.name =
+          typeof token.displayName === "string" ? token.displayName : null;
       }
       return session;
     },

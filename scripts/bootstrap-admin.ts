@@ -44,6 +44,8 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
+  const name = (await prompt("Full name (optional): ")).trim() || null;
+
   const password = await prompt("Password (min 12 chars): ", { silent: true });
   if (password.length < 12) {
     console.error("Password must be at least 12 characters.");
@@ -60,6 +62,7 @@ async function main(): Promise<void> {
   const user = await prisma.user.create({
     data: {
       email,
+      name,
       passwordHash,
       isAdmin: true,
       status: "ACTIVE",

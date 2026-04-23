@@ -51,8 +51,11 @@ export default async function EditUserPage({ params, searchParams }: Props) {
           ← Users
         </Link>
         <h1 className="mt-1 text-2xl font-semibold text-pp-navy">
-          {user.email}
+          {user.name ?? user.email}
         </h1>
+        {user.name ? (
+          <p className="text-sm text-pp-body/70">{user.email}</p>
+        ) : null}
         <p className="mt-1 text-sm text-pp-body/60">
           {user.status === "ACTIVE" ? "Active" : "Disabled"} ·{" "}
           {user.isAdmin ? "Administrator" : "Viewer"}
@@ -80,6 +83,21 @@ export default async function EditUserPage({ params, searchParams }: Props) {
         <h2 className="mb-3 font-semibold text-pp-navy">Profile</h2>
         <form action={updateUser} className="grid gap-4">
           <input type="hidden" name="id" value={user.id} />
+          <div>
+            <label className="mb-1 block text-sm font-medium text-pp-navy">
+              Name
+            </label>
+            <input
+              type="text"
+              name="name"
+              defaultValue={user.name ?? ""}
+              placeholder="e.g. Conor Nicholls"
+              className="w-full rounded-pp-button border border-black/10 px-3 py-2"
+            />
+            <p className="mt-1 text-xs text-pp-body/60">
+              Shown on the dashboard greeting.
+            </p>
+          </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-pp-navy">
               Email
