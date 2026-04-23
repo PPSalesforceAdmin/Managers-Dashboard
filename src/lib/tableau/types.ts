@@ -11,6 +11,31 @@ export interface TableauSignInResponse {
   };
 }
 
+export interface TableauView {
+  id: string;
+  name: string;
+  contentUrl: string;
+  workbookName?: string;
+}
+
+interface TableauViewApiShape {
+  id: string;
+  name: string;
+  contentUrl: string;
+  workbook?: { id: string; name?: string };
+}
+
+export interface TableauViewsResponse {
+  views?: {
+    view?: TableauViewApiShape | TableauViewApiShape[];
+  };
+  pagination?: {
+    pageNumber: string;
+    pageSize: string;
+    totalAvailable: string;
+  };
+}
+
 export type TableauOrientation = "portrait" | "landscape";
 
 export interface ExportViewOptions {

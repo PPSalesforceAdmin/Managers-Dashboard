@@ -14,7 +14,8 @@
     "prisma:seed": "tsx prisma/seed.ts",
     "bootstrap:admin": "tsx scripts/bootstrap-admin.ts",
     "worker:tick": "tsx worker/index.ts",
-    "tableau:ping": "tsx scripts/tableau-ping.ts"
+    "tableau:ping": "tsx scripts/tableau-ping.ts",
+    "tableau:views": "tsx scripts/tableau-list-views.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

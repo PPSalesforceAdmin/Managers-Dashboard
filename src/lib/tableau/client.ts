@@ -4,6 +4,8 @@ import {
   TableauExportError,
   TableauNotFoundError,
   TableauSignInResponse,
+  TableauView,
+  TableauViewsResponse,
 } from "./types";
 
 interface TableauClientConfig {
@@ -84,6 +86,44 @@ export class TableauClient {
       throw new TableauAuthError("Not signed in. Call signIn() first.");
     }
     return { token: this.token, siteLuid: this.siteLuid };
+  }
+
+  async listViews(): Promise<TableauView[]> {
+    const { token, siteLuid } = this.ensureSignedIn();
+    const pageSize = 100;
+    const results: TableauView[] = [];
+    let pageNumber = 1;
+
+    while (true) {
+      const url = `${this.baseUrl()}/sites/${siteLuid}/views?pageSize=${pageSize}&pageNumber=${pageNumber}&fields=_all_&includeUsageStatistics=false`;
+      const res = await fetch(url, {
+        method: "GET",
+        headers: { "X-Tableau-Auth": token, Accept: "application/json" },
+      });
+      if (!res.ok) {
+        throw new TableauExportError(
+          `Tableau listViews failed (${res.status})`,
+          res.status,
+        );
+      }
+      const data = (await res.json()) as TableauViewsResponse;
+      const raw = data.views?.view;
+      const items = Array.isArray(raw) ? raw : raw ? [raw] : [];
+
+      for (const v of items) {
+        results.push({
+          id: v.id,
+          name: v.name,
+          contentUrl: v.contentUrl,
+          workbookName: v.workbook?.name,
+        });
+      }
+
+      const total = Number(data.pagination?.totalAvailable ?? results.length);
+      if (results.length >= total || items.length === 0) break;
+      pageNumber += 1;
+    }
+    return results;
   }
 
   private buildExportUrl(
