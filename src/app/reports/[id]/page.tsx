@@ -5,6 +5,8 @@ import { requireUser } from "@/server/session";
 import { canUserViewReport } from "@/lib/authz";
 import { exportReportNow } from "@/lib/reports-actions";
 import { PdfViewer } from "@/components/ui/PdfViewer";
+import { PdfRefreshWatcher } from "@/components/ui/PdfRefreshWatcher";
+import { FavouriteStar } from "@/components/ui/FavouriteStar";
 
 function formatAgo(d: Date | null): string {
   if (!d) return "never exported";
@@ -25,10 +27,16 @@ export default async function ReportViewPage({
 }) {
   const user = await requireUser();
   const { id } = await params;
-  const report = await prisma.report.findUnique({
-    where: { id },
-    include: { category: true },
-  });
+
+  const [report, favourite] = await Promise.all([
+    prisma.report.findUnique({
+      where: { id },
+      include: { category: true },
+    }),
+    prisma.favourite.findUnique({
+      where: { userId_reportId: { userId: user.id, reportId: id } },
+    }),
+  ]);
   if (!report || !report.enabled) notFound();
 
   const allowed =
@@ -71,9 +79,16 @@ export default async function ReportViewPage({
               Last updated {formatAgo(report.lastExportedAt)}
             </p>
           </div>
-          <h1 className="mt-2 text-2xl font-bold tracking-pp-tight md:text-3xl">
-            {report.name}
-          </h1>
+          <div className="mt-2 flex items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-pp-tight md:text-3xl">
+              {report.name}
+            </h1>
+            <FavouriteStar
+              reportId={report.id}
+              isFavourite={Boolean(favourite)}
+              size="md"
+            />
+          </div>
           {report.description ? (
             <p className="mt-1 text-sm text-pp-body/70">{report.description}</p>
           ) : null}
@@ -100,6 +115,11 @@ export default async function ReportViewPage({
           ) : null}
         </div>
       </div>
+
+      <PdfRefreshWatcher
+        reportId={report.id}
+        initialLastExportedAt={report.lastExportedAt?.toISOString() ?? null}
+      />
 
       {hasExport ? (
         report.exportFormat === "PNG" ? (

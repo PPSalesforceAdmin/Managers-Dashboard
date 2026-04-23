@@ -3,6 +3,9 @@ import { redirect } from "next/navigation";
 import { auth, signOut } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { listUserReports } from "@/lib/authz";
+import { FavouriteStar } from "@/components/ui/FavouriteStar";
+
+const RECENTLY_VIEWED_COUNT = 4;
 
 function formatAgo(d: Date | null): string {
   if (!d) return "never";
@@ -19,6 +22,7 @@ function formatAgo(d: Date | null): string {
 export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
+  const userId = session.user.id;
 
   async function handleSignOut(): Promise<void> {
     "use server";
@@ -32,7 +36,7 @@ export default async function DashboardPage() {
         include: { category: true },
       })
     : await (async () => {
-        const rows = await listUserReports(session.user.id);
+        const rows = await listUserReports(userId);
         if (rows.length === 0) return [];
         const ids = rows.map((r) => r.id);
         return prisma.report.findMany({
@@ -41,6 +45,36 @@ export default async function DashboardPage() {
           include: { category: true },
         });
       })();
+
+  const visibleById = new Map(visibleReports.map((r) => [r.id, r]));
+
+  const [favRows, recentRows] = await Promise.all([
+    prisma.favourite.findMany({
+      where: { userId },
+      select: { reportId: true },
+    }),
+    prisma.reportView.findMany({
+      where: { userId },
+      orderBy: { viewedAt: "desc" },
+      take: 20,
+      select: { reportId: true, viewedAt: true },
+    }),
+  ]);
+
+  const favouriteIds = new Set(favRows.map((f) => f.reportId));
+  const favouriteReports = visibleReports.filter((r) => favouriteIds.has(r.id));
+
+  // Dedupe recently-viewed by reportId, keep first occurrence (most recent),
+  // and only include reports the user can currently see.
+  const seen = new Set<string>();
+  const recentlyViewed: typeof visibleReports = [];
+  for (const row of recentRows) {
+    if (seen.has(row.reportId)) continue;
+    seen.add(row.reportId);
+    const report = visibleById.get(row.reportId);
+    if (report) recentlyViewed.push(report);
+    if (recentlyViewed.length >= RECENTLY_VIEWED_COUNT) break;
+  }
 
   const reportsByCategory = new Map<string, typeof visibleReports>();
   for (const r of visibleReports) {
@@ -65,6 +99,12 @@ export default async function DashboardPage() {
           </h1>
         </div>
         <div className="flex gap-2">
+          <Link
+            href="/reports"
+            className="rounded-pp-button border border-black/10 bg-white px-4 py-2 text-sm font-semibold text-pp-navy shadow-pp-card-very-soft transition hover:bg-pp-offwhite"
+          >
+            All reports
+          </Link>
           {session.user.isAdmin ? (
             <Link
               href="/admin/reports"
@@ -106,45 +146,108 @@ export default async function DashboardPage() {
           </p>
         </div>
       ) : (
-        categoryNames.map((cat) => (
-          <section key={cat}>
-            <div className="mb-4 flex items-baseline gap-3">
-              <h2 className="text-base font-bold uppercase tracking-pp-nav text-pp-navy">
-                {cat}
-              </h2>
-              <span className="text-xs text-pp-body/50">
-                {reportsByCategory.get(cat)!.length} report
-                {reportsByCategory.get(cat)!.length === 1 ? "" : "s"}
-              </span>
-              <div className="ml-auto h-px flex-1 bg-black/5" />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {reportsByCategory.get(cat)!.map((r) => (
-                <Link
-                  key={r.id}
-                  href={`/reports/${r.id}`}
-                  className="group relative block rounded-pp-card bg-white p-5 shadow-pp-card-soft transition hover:-translate-y-0.5 hover:shadow-pp-card"
-                >
-                  <span className="absolute right-4 top-4 inline-flex h-6 items-center rounded-pp-pill bg-pp-orange px-2.5 text-[10px] font-bold uppercase tracking-pp-nav text-white">
-                    PDF
-                  </span>
-                  <p className="pr-10 text-base font-bold text-pp-navy group-hover:text-pp-orange">
-                    {r.name}
-                  </p>
-                  {r.description ? (
-                    <p className="mt-1.5 line-clamp-2 text-sm text-pp-body/70">
-                      {r.description}
-                    </p>
-                  ) : null}
-                  <p className="mt-4 text-xs font-medium text-pp-body/50">
-                    Last updated {formatAgo(r.lastExportedAt)}
-                  </p>
-                </Link>
-              ))}
-            </div>
-          </section>
-        ))
+        <>
+          {favouriteReports.length > 0 ? (
+            <Section label="Favourites" count={favouriteReports.length}>
+              <ReportGrid
+                reports={favouriteReports}
+                favouriteIds={favouriteIds}
+              />
+            </Section>
+          ) : null}
+
+          {recentlyViewed.length > 0 ? (
+            <Section label="Recently viewed" count={recentlyViewed.length}>
+              <ReportGrid reports={recentlyViewed} favouriteIds={favouriteIds} />
+            </Section>
+          ) : null}
+
+          {categoryNames.map((cat) => (
+            <Section
+              key={cat}
+              label={cat}
+              count={reportsByCategory.get(cat)!.length}
+            >
+              <ReportGrid
+                reports={reportsByCategory.get(cat)!}
+                favouriteIds={favouriteIds}
+              />
+            </Section>
+          ))}
+        </>
       )}
+    </div>
+  );
+}
+
+function Section({
+  label,
+  count,
+  children,
+}: {
+  label: string;
+  count: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <section>
+      <div className="mb-4 flex items-baseline gap-3">
+        <h2 className="text-base font-bold uppercase tracking-pp-nav text-pp-navy">
+          {label}
+        </h2>
+        <span className="text-xs text-pp-body/50">
+          {count} report{count === 1 ? "" : "s"}
+        </span>
+        <div className="ml-auto h-px flex-1 bg-black/5" />
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function ReportGrid({
+  reports,
+  favouriteIds,
+}: {
+  reports: Array<{
+    id: string;
+    name: string;
+    description: string | null;
+    lastExportedAt: Date | null;
+  }>;
+  favouriteIds: Set<string>;
+}) {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {reports.map((r) => (
+        <div
+          key={r.id}
+          className="group relative rounded-pp-card bg-white p-5 shadow-pp-card-soft transition hover:-translate-y-0.5 hover:shadow-pp-card"
+        >
+          <div className="absolute right-3 top-3 flex items-center gap-1.5">
+            <FavouriteStar
+              reportId={r.id}
+              isFavourite={favouriteIds.has(r.id)}
+            />
+            <span className="inline-flex h-6 items-center rounded-pp-pill bg-pp-orange px-2.5 text-[10px] font-bold uppercase tracking-pp-nav text-white">
+              PDF
+            </span>
+          </div>
+          <Link href={`/reports/${r.id}`} className="block pr-16">
+            <p className="text-base font-bold text-pp-navy group-hover:text-pp-orange">
+              {r.name}
+            </p>
+            {r.description ? (
+              <p className="mt-1.5 line-clamp-2 text-sm text-pp-body/70">
+                {r.description}
+              </p>
+            ) : null}
+            <p className="mt-4 text-xs font-medium text-pp-body/50">
+              Last updated {formatAgo(r.lastExportedAt)}
+            </p>
+          </Link>
+        </div>
+      ))}
     </div>
   );
 }

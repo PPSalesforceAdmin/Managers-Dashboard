@@ -18,6 +18,7 @@ export default async function AdminLayout({
         <NavLink href="/admin/reports">Reports</NavLink>
         <NavLink href="/admin/users">Users</NavLink>
         <NavLink href="/admin/roles">Roles</NavLink>
+        <NavLink href="/admin/audit">Audit log</NavLink>
         <div className="my-2 border-t border-black/5" />
         <NavLink href="/dashboard" muted>
           ← Back to dashboard
