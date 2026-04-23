@@ -92,22 +92,11 @@ export default async function ReportViewPage({
             />
           </div>
         ) : (
-          <object
-            data={fileSrc}
-            type="application/pdf"
+          <iframe
+            src={fileSrc}
+            title={report.name}
             className="h-[85vh] w-full rounded border border-slate-200 bg-white"
-          >
-            <p className="p-4 text-sm text-slate-600">
-              Your browser can't display PDFs inline.{" "}
-              <a
-                className="text-pp-orange underline"
-                href={`${fileSrc}?download=1`}
-              >
-                Download the PDF
-              </a>{" "}
-              instead.
-            </p>
-          </object>
+          />
         )
       ) : (
         <div className="rounded border border-dashed border-slate-300 bg-white p-10 text-center">
