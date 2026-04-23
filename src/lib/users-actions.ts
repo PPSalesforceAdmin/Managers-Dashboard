@@ -50,12 +50,36 @@ export async function updateUser(formData: FormData): Promise<void> {
 
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const name = String(formData.get("name") ?? "").trim() || null;
-  const isAdmin = formData.get("isAdmin") === "on";
   if (!email || !email.includes("@")) throw new Error("Valid email required");
+
+  const current = await prisma.user.findUnique({
+    where: { id },
+    select: { isAdmin: true },
+  });
+  if (!current) throw new Error("User not found");
+
+  const isSelf = admin.id === id;
+  const requestedIsAdmin = formData.get("isAdmin") === "on";
+  // Preserve current isAdmin when editing self. Disabled checkboxes aren't
+  // submitted by the browser, so a self-edit form always comes through with
+  // isAdmin=undefined. This also blocks a crafted POST from self-demoting.
+  const nextIsAdmin = isSelf ? current.isAdmin : requestedIsAdmin;
+
+  // Never leave zero active administrators.
+  if (current.isAdmin && !nextIsAdmin) {
+    const activeAdminCount = await prisma.user.count({
+      where: { isAdmin: true, status: "ACTIVE" },
+    });
+    if (activeAdminCount <= 1) {
+      throw new Error(
+        "Can't remove admin rights from the last active administrator.",
+      );
+    }
+  }
 
   await prisma.user.update({
     where: { id },
-    data: { email, name, isAdmin },
+    data: { email, name, isAdmin: nextIsAdmin },
   });
   await logAuditEvent({
     userId: admin.id,
@@ -74,6 +98,24 @@ export async function setUserStatus(formData: FormData): Promise<void> {
   if (id === admin.id && next === "DISABLED") {
     throw new Error("You cannot disable your own account.");
   }
+
+  if (next === "DISABLED") {
+    const target = await prisma.user.findUnique({
+      where: { id },
+      select: { isAdmin: true },
+    });
+    if (target?.isAdmin) {
+      const activeAdminCount = await prisma.user.count({
+        where: { isAdmin: true, status: "ACTIVE" },
+      });
+      if (activeAdminCount <= 1) {
+        throw new Error(
+          "Can't disable the last active administrator.",
+        );
+      }
+    }
+  }
+
   await prisma.user.update({
     where: { id },
     data: { status: next as "ACTIVE" | "DISABLED" },
