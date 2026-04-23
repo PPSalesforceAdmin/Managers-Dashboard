@@ -3,14 +3,18 @@ import { auth, signIn } from "@/lib/auth";
 import { AuthError } from "next-auth";
 
 interface LoginPageProps {
-  searchParams: Promise<{ callbackUrl?: string; error?: string }>;
+  searchParams: Promise<{
+    callbackUrl?: string;
+    error?: string;
+    changed?: string;
+  }>;
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const session = await auth();
   if (session?.user?.id) redirect("/dashboard");
 
-  const { callbackUrl, error } = await searchParams;
+  const { callbackUrl, error, changed } = await searchParams;
 
   async function handleLogin(formData: FormData): Promise<void> {
     "use server";
@@ -35,6 +39,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <div className="mx-auto max-w-sm py-12">
       <h1 className="mb-6 text-2xl font-semibold text-pp-navy">Sign in</h1>
+      {changed ? (
+        <p className="mb-4 rounded border border-green-300 bg-green-50 p-3 text-sm text-green-800">
+          Password changed. Please sign in with your new password.
+        </p>
+      ) : null}
       <form action={handleLogin} className="space-y-4">
         <input type="hidden" name="callbackUrl" value={callbackUrl ?? ""} />
         <div>
