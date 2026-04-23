@@ -16,6 +16,7 @@ export interface TableauView {
   name: string;
   contentUrl: string;
   workbookName?: string;
+  projectName?: string;
 }
 
 interface TableauViewApiShape {
@@ -23,6 +24,7 @@ interface TableauViewApiShape {
   name: string;
   contentUrl: string;
   workbook?: { id: string; name?: string };
+  project?: { id?: string; name?: string };
 }
 
 export interface TableauViewsResponse {
