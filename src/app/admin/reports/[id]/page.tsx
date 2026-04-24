@@ -8,6 +8,7 @@ import {
   exportReportNow,
 } from "@/lib/reports-actions";
 import { ReportFormFields } from "@/components/ui/ReportFormFields";
+import { DangerSubmitButton } from "@/components/ui/DangerSubmitButton";
 
 export default async function EditReportPage({
   params,
@@ -74,15 +75,12 @@ export default async function EditReportPage({
         <input type="hidden" name="id" value={report.id} />
         <ReportFormFields categories={categories} report={report} />
         <div className="mt-6 flex justify-between">
-          <form action={deleteReport}>
-            <input type="hidden" name="id" value={report.id} />
-            <button
-              type="submit"
-              className="rounded-pp-button border border-red-200 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-            >
-              Delete report
-            </button>
-          </form>
+          <DangerSubmitButton
+            formAction={deleteReport}
+            confirmMessage={`Delete "${report.name}"? This removes the report and all its export history. This can't be undone.`}
+          >
+            Delete report
+          </DangerSubmitButton>
           <button
             type="submit"
             className="rounded-pp-button-lg bg-pp-orange px-5 py-2 text-sm font-bold text-white transition hover:brightness-110"

@@ -7,6 +7,7 @@ import {
   deleteRole,
   setRoleReports,
 } from "@/lib/roles-actions";
+import { DangerSubmitButton } from "@/components/ui/DangerSubmitButton";
 
 export default async function EditRolePage({
   params,
@@ -61,15 +62,13 @@ export default async function EditRolePage({
             />
           </div>
           <div className="flex justify-between">
-            <form action={deleteRole}>
-              <input type="hidden" name="id" value={role.id} />
-              <button
-                type="submit"
-                className="rounded-pp-button border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
-              >
-                Delete role
-              </button>
-            </form>
+            <DangerSubmitButton
+              formAction={deleteRole}
+              confirmMessage={`Delete role "${role.name}"? Users assigned to it will lose access to reports only granted via this role.`}
+              className="rounded-pp-button border border-red-200 px-3 py-1.5 text-sm font-semibold text-red-600 hover:bg-red-50"
+            >
+              Delete role
+            </DangerSubmitButton>
             <button
               type="submit"
               className="rounded-pp-button-lg bg-pp-orange px-5 py-2 text-sm font-bold text-white transition hover:brightness-110"
