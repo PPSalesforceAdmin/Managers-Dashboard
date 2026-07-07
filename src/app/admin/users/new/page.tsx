@@ -16,8 +16,9 @@ export default async function NewUserPage() {
         </Link>
         <h1 className="mt-1 text-2xl font-semibold text-pp-navy">New user</h1>
         <p className="mt-1 text-sm text-pp-body/80">
-          A 12-character temp password will be generated. It's shown once on
-          the next screen — copy it and share via your normal channel.
+          Pre-provision a user so you can assign roles or report access before
+          their first sign-in. They'll authenticate with their
+          progressiveproperty.co.uk Google account — no password needed.
         </p>
       </div>
 

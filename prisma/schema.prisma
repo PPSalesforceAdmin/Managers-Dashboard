@@ -8,17 +8,13 @@ datasource db {
 }
 
 model User {
-  id                  String     @id @default(cuid())
-  email               String     @unique
-  name                String?
-  passwordHash        String
-  mfaSecret           String?
-  mfaEnabled          Boolean    @default(false)
-  forcePasswordChange Boolean    @default(false)
-  status              UserStatus @default(ACTIVE)
-  isAdmin             Boolean    @default(false)
-  createdAt           DateTime   @default(now())
-  lastLoginAt         DateTime?
+  id           String     @id @default(cuid())
+  email        String     @unique
+  name         String?
+  status       UserStatus @default(ACTIVE)
+  isAdmin      Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  lastLoginAt  DateTime?
 
   roles        UserRole[]
   reportGrants UserReport[]

@@ -5,21 +5,17 @@ import { requireAdmin } from "@/server/session";
 import {
   updateUser,
   setUserStatus,
-  resetUserPassword,
-  resetUserMfa,
   setUserRoles,
   setUserReportGrants,
 } from "@/lib/users-actions";
 
 interface Props {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ tempPassword?: string }>;
 }
 
-export default async function EditUserPage({ params, searchParams }: Props) {
+export default async function EditUserPage({ params }: Props) {
   const admin = await requireAdmin();
   const { id } = await params;
-  const { tempPassword } = await searchParams;
 
   const [user, roles, reports, userRoles, userGrants] = await Promise.all([
     prisma.user.findUnique({ where: { id } }),
@@ -59,25 +55,8 @@ export default async function EditUserPage({ params, searchParams }: Props) {
         <p className="mt-1 text-sm text-pp-body/60">
           {user.status === "ACTIVE" ? "Active" : "Disabled"} ·{" "}
           {user.isAdmin ? "Administrator" : "Viewer"}
-          {user.forcePasswordChange ? " · Must change password on next login" : ""}
-          {user.mfaEnabled ? " · MFA enrolled" : ""}
         </p>
       </div>
-
-      {tempPassword ? (
-        <div className="rounded-pp-card border border-pp-amber/40 bg-pp-amber/10 p-4">
-          <p className="text-sm font-semibold text-amber-900">
-            Temporary password — shown once
-          </p>
-          <p className="mt-1 text-sm text-amber-800">
-            Copy this and share with {user.email}. They'll be forced to change
-            it on first login.
-          </p>
-          <code className="mt-2 inline-block rounded bg-white px-3 py-1 font-mono text-sm">
-            {tempPassword}
-          </code>
-        </div>
-      ) : null}
 
       <section className="rounded-pp-card bg-white shadow-pp-card-very-soft p-5">
         <h2 className="mb-3 font-semibold text-pp-navy">Profile</h2>
@@ -233,36 +212,6 @@ export default async function EditUserPage({ params, searchParams }: Props) {
       <section className="rounded-pp-card bg-white shadow-pp-card-very-soft p-5">
         <h2 className="mb-3 font-semibold text-pp-navy">Account actions</h2>
         <div className="grid gap-3 md:grid-cols-2">
-          <form action={resetUserPassword}>
-            <input type="hidden" name="id" value={user.id} />
-            <button
-              type="submit"
-              className="w-full rounded-pp-button border border-black/10 px-3 py-2 text-sm hover:bg-pp-offwhite"
-            >
-              Reset password (generates temp)
-            </button>
-          </form>
-
-          {user.mfaEnabled ? (
-            <form action={resetUserMfa}>
-              <input type="hidden" name="id" value={user.id} />
-              <button
-                type="submit"
-                className="w-full rounded-pp-button border border-black/10 px-3 py-2 text-sm hover:bg-pp-offwhite"
-              >
-                Reset MFA (user re-enrols on next login)
-              </button>
-            </form>
-          ) : (
-            <button
-              type="button"
-              disabled
-              className="w-full cursor-not-allowed rounded border border-black/5 bg-pp-offwhite px-3 py-2 text-sm text-slate-400"
-            >
-              MFA not enrolled
-            </button>
-          )}
-
           {user.status === "ACTIVE" ? (
             <form action={setUserStatus}>
               <input type="hidden" name="id" value={user.id} />

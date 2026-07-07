@@ -2,11 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { logAuditEvent } from "@/server/audit";
 import { requireAdmin } from "@/server/session";
-import { generateTempPassword } from "@/lib/passwords";
 
 export async function createUser(formData: FormData): Promise<void> {
   const admin = await requireAdmin();
@@ -18,18 +16,12 @@ export async function createUser(formData: FormData): Promise<void> {
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) throw new Error("A user with that email already exists");
 
-  const tempPassword = generateTempPassword(12);
-  const passwordHash = await bcrypt.hash(tempPassword, 12);
-
   const user = await prisma.user.create({
     data: {
       email,
       name,
-      passwordHash,
       isAdmin,
       status: "ACTIVE",
-      mfaEnabled: false,
-      forcePasswordChange: true,
     },
   });
 
@@ -40,7 +32,7 @@ export async function createUser(formData: FormData): Promise<void> {
   });
 
   revalidatePath("/admin/users");
-  redirect(`/admin/users/${user.id}?tempPassword=${encodeURIComponent(tempPassword)}`);
+  redirect(`/admin/users/${user.id}`);
 }
 
 export async function updateUser(formData: FormData): Promise<void> {
@@ -126,41 +118,6 @@ export async function setUserStatus(formData: FormData): Promise<void> {
     targetId: id,
   });
   revalidatePath("/admin/users");
-  revalidatePath(`/admin/users/${id}`);
-}
-
-export async function resetUserPassword(formData: FormData): Promise<void> {
-  const admin = await requireAdmin();
-  const id = String(formData.get("id") ?? "");
-  if (!id) return;
-  const tempPassword = generateTempPassword(12);
-  const passwordHash = await bcrypt.hash(tempPassword, 12);
-  await prisma.user.update({
-    where: { id },
-    data: { passwordHash, forcePasswordChange: true },
-  });
-  await logAuditEvent({
-    userId: admin.id,
-    action: "admin_user_password_reset",
-    targetId: id,
-  });
-  revalidatePath(`/admin/users/${id}`);
-  redirect(`/admin/users/${id}?tempPassword=${encodeURIComponent(tempPassword)}`);
-}
-
-export async function resetUserMfa(formData: FormData): Promise<void> {
-  const admin = await requireAdmin();
-  const id = String(formData.get("id") ?? "");
-  if (!id) return;
-  await prisma.user.update({
-    where: { id },
-    data: { mfaEnabled: false, mfaSecret: null },
-  });
-  await logAuditEvent({
-    userId: admin.id,
-    action: "admin_user_mfa_reset",
-    targetId: id,
-  });
   revalidatePath(`/admin/users/${id}`);
 }
 

@@ -23,13 +23,6 @@ export default auth((req) => {
   }
 
   if (isAuthed) {
-    const forceChange = Boolean(req.auth?.user?.forcePasswordChange);
-    const onChangeRoute =
-      pathname === "/change-password" || pathname === "/api/account/password";
-    if (forceChange && !onChangeRoute && !isPublicPath) {
-      return NextResponse.redirect(new URL("/change-password", req.nextUrl));
-    }
-
     const adminPath =
       pathname.startsWith("/admin") || pathname.startsWith("/api/admin");
     if (adminPath && !req.auth?.user?.isAdmin) {

@@ -1,39 +1,30 @@
 import { redirect } from "next/navigation";
 import { auth, signIn } from "@/lib/auth";
-import { AuthError } from "next-auth";
 
 interface LoginPageProps {
   searchParams: Promise<{
     callbackUrl?: string;
     error?: string;
-    changed?: string;
   }>;
 }
+
+const ERROR_MESSAGES: Record<string, string> = {
+  AccessDenied:
+    "Only progressiveproperty.co.uk Google accounts can sign in. If your account has been disabled, contact an admin.",
+};
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const session = await auth();
   if (session?.user?.id) redirect("/dashboard");
 
-  const { callbackUrl, error, changed } = await searchParams;
+  const { callbackUrl, error } = await searchParams;
+  const errorMessage = error
+    ? (ERROR_MESSAGES[error] ?? "Something went wrong signing you in.")
+    : null;
 
-  async function handleLogin(formData: FormData): Promise<void> {
+  async function handleGoogleSignIn(): Promise<void> {
     "use server";
-    const callback = (formData.get("callbackUrl") as string) || "/dashboard";
-    try {
-      await signIn("credentials", {
-        email: formData.get("email"),
-        password: formData.get("password"),
-        totp: formData.get("totp"),
-        redirectTo: callback,
-      });
-    } catch (err) {
-      if (err instanceof AuthError) {
-        redirect(
-          `/login?error=CredentialsSignin&callbackUrl=${encodeURIComponent(callback)}`,
-        );
-      }
-      throw err;
-    }
+    await signIn("google", { redirectTo: callbackUrl || "/dashboard" });
   }
 
   return (
@@ -44,78 +35,37 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           Progressive Property managers portal
         </p>
 
-        {changed ? (
-          <p className="mb-4 rounded-pp-button bg-green-50 p-3 text-sm text-green-800 ring-1 ring-green-200">
-            Password changed. Please sign in with your new password.
+        {errorMessage ? (
+          <p className="mb-4 rounded-pp-button bg-red-50 p-3 text-sm text-red-700 ring-1 ring-red-200">
+            {errorMessage}
           </p>
         ) : null}
 
-        <form action={handleLogin} className="space-y-4">
-          <input type="hidden" name="callbackUrl" value={callbackUrl ?? ""} />
-          <Field label="Email" htmlFor="email">
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              autoComplete="email"
-              className="w-full rounded-pp-button border border-black/10 bg-white px-3 py-2.5 text-pp-body outline-none transition focus:border-pp-orange focus:ring-2 focus:ring-pp-orange/20"
-            />
-          </Field>
-          <Field label="Password" htmlFor="password">
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              autoComplete="current-password"
-              className="w-full rounded-pp-button border border-black/10 bg-white px-3 py-2.5 text-pp-body outline-none transition focus:border-pp-orange focus:ring-2 focus:ring-pp-orange/20"
-            />
-          </Field>
-
-          {error ? (
-            <p className="rounded-pp-button bg-red-50 p-3 text-sm text-red-700 ring-1 ring-red-200">
-              Invalid email, password, or code.
-            </p>
-          ) : null}
-
+        <form action={handleGoogleSignIn}>
           <button
             type="submit"
-            className="w-full rounded-pp-button-lg bg-pp-orange px-4 py-3 text-sm font-bold text-white transition hover:brightness-110"
+            className="flex w-full items-center justify-center gap-2 rounded-pp-button-lg bg-pp-orange px-4 py-3 text-sm font-bold text-white transition hover:brightness-110"
           >
-            Sign in
+            <GoogleIcon />
+            Sign in with Google
           </button>
         </form>
+
+        <p className="mt-4 text-xs text-pp-body/60">
+          Sign-in is restricted to progressiveproperty.co.uk Google accounts.
+        </p>
       </div>
     </div>
   );
 }
 
-function Field({
-  label,
-  htmlFor,
-  hint,
-  children,
-}: {
-  label: string;
-  htmlFor: string;
-  hint?: string;
-  children: React.ReactNode;
-}) {
+function GoogleIcon() {
   return (
-    <div>
-      <label
-        htmlFor={htmlFor}
-        className="mb-1.5 flex items-baseline justify-between text-xs font-semibold uppercase tracking-pp-nav text-pp-navy"
-      >
-        <span>{label}</span>
-        {hint ? (
-          <span className="text-[11px] font-medium normal-case tracking-normal text-pp-body/60">
-            {hint}
-          </span>
-        ) : null}
-      </label>
-      {children}
-    </div>
+    <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M12 11v2.8h6.5c-.3 1.6-2 4.7-6.5 4.7-3.9 0-7.1-3.2-7.1-7.2s3.2-7.2 7.1-7.2c2.2 0 3.7.9 4.6 1.7l3.1-3C17.7 1 15.1 0 12 0 5.4 0 0 5.4 0 12s5.4 12 12 12c6.9 0 11.5-4.9 11.5-11.7 0-.8-.1-1.4-.2-2H12z"
+      />
+    </svg>
   );
 }

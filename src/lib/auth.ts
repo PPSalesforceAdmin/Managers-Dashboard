@@ -1,58 +1,74 @@
 import NextAuth from "next-auth";
-import Credentials from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
-import { authenticator } from "otplib";
-import { z } from "zod";
+import Google from "next-auth/providers/google";
 import { prisma } from "@/lib/db";
 import { logAuditEvent } from "@/server/audit";
 import { authConfig } from "@/lib/auth.config";
 
-const credentialsSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
-  totp: z.string().optional(),
-});
+const ALLOWED_DOMAIN = "progressiveproperty.co.uk";
+
+// Always granted admin on first sign-in, even against a brand-new database,
+// so there's never a chicken-and-egg problem getting an initial admin set up.
+const BOOTSTRAP_ADMIN_EMAILS = new Set(["sfadmin@progressiveproperty.co.uk"]);
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   providers: [
-    Credentials({
-      name: "Credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-        totp: { label: "6-digit code", type: "text" },
-      },
-      async authorize(raw) {
-        const parsed = credentialsSchema.safeParse(raw);
-        if (!parsed.success) return null;
-        const { email, password, totp } = parsed.data;
-
-        const user = await prisma.user.findUnique({
-          where: { email: email.toLowerCase() },
-        });
-        if (!user) return null;
-        if (user.status !== "ACTIVE") return null;
-
-        const passwordOk = await bcrypt.compare(password, user.passwordHash);
-        if (!passwordOk) return null;
-
-        if (user.mfaEnabled) {
-          if (!user.mfaSecret || !totp) return null;
-          const totpOk = authenticator.check(totp.trim(), user.mfaSecret);
-          if (!totpOk) return null;
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          isAdmin: user.isAdmin,
-          forcePasswordChange: user.forcePasswordChange,
-        };
+    Google({
+      clientId: process.env.AUTH_GOOGLE_ID,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET,
+      authorization: {
+        params: { hd: ALLOWED_DOMAIN, prompt: "select_account" },
       },
     }),
   ],
+  callbacks: {
+    async signIn({ user, profile }) {
+      const email = user.email?.toLowerCase();
+      if (!email) return false;
+
+      const hd = typeof profile?.hd === "string" ? profile.hd : undefined;
+      if (hd !== ALLOWED_DOMAIN && !email.endsWith(`@${ALLOWED_DOMAIN}`)) {
+        return false;
+      }
+
+      let dbUser = await prisma.user.findUnique({ where: { email } });
+      if (!dbUser) {
+        dbUser = await prisma.user.create({
+          data: {
+            email,
+            name: user.name ?? null,
+            isAdmin: BOOTSTRAP_ADMIN_EMAILS.has(email),
+            status: "ACTIVE",
+          },
+        });
+      }
+      if (dbUser.status !== "ACTIVE") return false;
+
+      // Overwrite Google's provider-scoped id with our internal user id so it
+      // flows through to the jwt callback and events.signIn below.
+      user.id = dbUser.id;
+      user.isAdmin = dbUser.isAdmin;
+      user.name = dbUser.name;
+      return true;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.userId = user.id;
+        token.isAdmin = Boolean(user.isAdmin);
+        token.displayName = user.name ?? null;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (typeof token.userId === "string") {
+        session.user.id = token.userId;
+        session.user.isAdmin = Boolean(token.isAdmin);
+        session.user.name =
+          typeof token.displayName === "string" ? token.displayName : null;
+      }
+      return session;
+    },
+  },
   events: {
     async signIn({ user }) {
       if (!user?.id) return;
