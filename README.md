@@ -74,19 +74,23 @@ See [`.env.example`](.env.example). Grouped by service:
 | `AUTH_SECRET` | ✓ |   | `openssl rand -base64 32` |
 | `AUTH_URL` | ✓ |   | Public URL of the web service |
 | `AUTH_TRUST_HOST` | ✓ |   | Set `"true"` on Railway |
+| `AUTH_GOOGLE_ID` | ✓ |   | Google Cloud Console OAuth client ID |
+| `AUTH_GOOGLE_SECRET` | ✓ |   | Google Cloud Console OAuth client secret |
 | `S3_ENDPOINT` | ✓ | ✓ | e.g. `https://t3.storageapi.dev` |
 | `S3_BUCKET` | ✓ | ✓ | Bucket name |
 | `S3_ACCESS_KEY_ID` | ✓ | ✓ | |
 | `S3_SECRET_ACCESS_KEY` | ✓ | ✓ | |
 | `S3_REGION` | ✓ | ✓ | `auto` for R2/Railway; region code for AWS |
-| `TABLEAU_SITE_URL` |   | ✓ | e.g. `https://prod-uk-a.online.tableau.com` |
-| `TABLEAU_SITE_CONTENT_URL` |   | ✓ | Site content URL from Tableau |
-| `TABLEAU_PAT_NAME` |   | ✓ | Never set on `web` |
-| `TABLEAU_PAT_SECRET` |   | ✓ | Never set on `web` |
-| `TABLEAU_API_VERSION` |   | ✓ | Default `3.22` |
+| `TABLEAU_SITE_URL` | ✓ | ✓ | e.g. `https://prod-uk-a.online.tableau.com` |
+| `TABLEAU_SITE_CONTENT_URL` | ✓ | ✓ | Site content URL from Tableau |
+| `TABLEAU_PAT_NAME` | ✓ | ✓ | |
+| `TABLEAU_PAT_SECRET` | ✓ | ✓ | |
+| `TABLEAU_API_VERSION` | ✓ | ✓ | Default `3.22` |
 
-The ping route (`/api/admin/tableau/ping`) also needs the `TABLEAU_*` vars on
-`web` — remove it once the worker is proven end-to-end.
+`web` needs the `TABLEAU_*` vars permanently — not just for the ping route
+(`/api/admin/tableau/ping`), but also for the admin "browse Tableau catalog"
+picker on the new/edit report forms (`/api/admin/tableau/catalog`), which
+signs in live to list projects/workbooks/views for search.
 
 ## Railway setup (one-time, browser)
 
@@ -96,7 +100,7 @@ The ping route (`/api/admin/tableau/ping`) also needs the `TABLEAU_*` vars on
 4. **Create service `web`**:
    - Pre-deploy command: `npx prisma migrate deploy`
    - Start command: `npm run start`
-   - Env: `DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL`, `AUTH_TRUST_HOST=true`, all `S3_*` vars
+   - Env: `DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL`, `AUTH_TRUST_HOST=true`, all `S3_*` vars, all `TABLEAU_*` vars
 5. **Create service `worker`**:
    - Start command: `npm run worker:tick`
    - Cron schedule: `*/5 * * * *`

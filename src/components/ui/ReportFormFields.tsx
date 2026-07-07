@@ -1,4 +1,5 @@
 import type { Category, Report } from "@prisma/client";
+import { TableauViewPicker } from "@/components/ui/TableauViewPicker";
 
 interface Props {
   categories: Pick<Category, "id" | "name">[];
@@ -25,6 +26,7 @@ export function ReportFormFields({ categories, report }: Props) {
     <div className="grid gap-4">
       <Field label="Name" hint="Shown to users on the reports grid.">
         <input
+          id="name"
           name="name"
           defaultValue={defaults.name}
           required
@@ -55,11 +57,14 @@ export function ReportFormFields({ categories, report }: Props) {
         </select>
       </Field>
 
+      <TableauViewPicker />
+
       <Field
         label="Tableau view LUID"
-        hint={'Run `npm run tableau:views` locally to list LUIDs.'}
+        hint={'Or run `npm run tableau:views` locally to list LUIDs.'}
       >
         <input
+          id="tableauViewId"
           name="tableauViewId"
           defaultValue={defaults.tableauViewId}
           required
@@ -73,6 +78,7 @@ export function ReportFormFields({ categories, report }: Props) {
         hint="Human-readable path, e.g. `CETTargets/sheets/DailyCalls4Mths`."
       >
         <input
+          id="tableauContentUrl"
           name="tableauContentUrl"
           defaultValue={defaults.tableauContentUrl}
           className="w-full rounded-pp-button border border-black/10 px-3 py-2 font-mono text-xs"

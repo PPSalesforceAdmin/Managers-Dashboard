@@ -1,4 +1,5 @@
 import { TableauClient } from "../src/lib/tableau/client";
+import { groupViewsByProjectAndWorkbook } from "../src/lib/tableau/catalog";
 
 async function main(): Promise<void> {
   const filter = process.argv.slice(2).join(" ").trim().toLowerCase();
@@ -27,24 +28,12 @@ async function main(): Promise<void> {
     }
 
     // Group by project, then workbook, for readability
-    const byProject = new Map<string, Map<string, typeof filtered>>();
-    for (const v of filtered) {
-      const project = v.projectName ?? "(no project)";
-      const workbook = v.workbookName ?? "(no workbook)";
-      if (!byProject.has(project)) byProject.set(project, new Map());
-      const wb = byProject.get(project)!;
-      if (!wb.has(workbook)) wb.set(workbook, []);
-      wb.get(workbook)!.push(v);
-    }
-
-    const projectNames = [...byProject.keys()].sort();
-    for (const project of projectNames) {
+    const groups = groupViewsByProjectAndWorkbook(filtered);
+    for (const { project, workbooks } of groups) {
       console.log(`\n📁 ${project}`);
-      const wbMap = byProject.get(project)!;
-      const workbookNames = [...wbMap.keys()].sort();
-      for (const wb of workbookNames) {
-        console.log(`  📘 ${wb}`);
-        for (const v of wbMap.get(wb)!) {
+      for (const { workbook, views } of workbooks) {
+        console.log(`  📘 ${workbook}`);
+        for (const v of views) {
           console.log(`    • ${v.name}`);
           console.log(`        LUID:       ${v.id}`);
           console.log(`        contentUrl: ${v.contentUrl}`);

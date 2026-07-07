@@ -16,7 +16,9 @@ export interface TableauView {
   name: string;
   contentUrl: string;
   workbookName?: string;
+  workbookId?: string;
   projectName?: string;
+  projectId?: string;
 }
 
 interface TableauViewApiShape {

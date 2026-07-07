@@ -116,7 +116,9 @@ export class TableauClient {
           name: v.name,
           contentUrl: v.contentUrl,
           workbookName: v.workbook?.name,
+          workbookId: v.workbook?.id,
           projectName: v.project?.name,
+          projectId: v.project?.id,
         });
       }
 
